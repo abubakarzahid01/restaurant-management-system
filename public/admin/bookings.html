@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Table Bookings - Restaurant Admin</title>
+    <link rel="stylesheet" href="admin-styles.css">
+</head>
+<body>
+    <div class="admin-wrapper">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h2>Restaurant Admin</h2>
+                <p>Management Panel</p>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="/admin/dashboard.html" class="nav-item">
+                    <span>Dashboard</span>
+                </a>
+                <a href="/admin/users.html" class="nav-item">
+                    <span>Users</span>
+                </a>
+               <a href="/admin/orders.html" class="nav-item">
+                   <span>Orders</span>
+                </a>
+                <a href="/admin/menu-items.html" class="nav-item">
+                    <span>Menu</span>
+                </a>
+                <a href="/admin/bookings.html" class="nav-item active">
+                    <span>Bookings</span>
+                </a>
+                 <a href="/admin/reviews.html" class="nav-item">
+                    <span>Reviews</span>
+                </a>
+                <a href="/admin/newsletter.html" class="nav-item">
+                    <span>Newsletter</span>
+                </a>
+            </nav>
+            <div class="sidebar-footer">
+                <div class="admin-info">
+                    <div class="admin-avatar" id="adminInitials">AD</div>
+                    <div class="admin-details">
+                        <p class="admin-name" id="adminName">Admin User</p>
+                        <p class="admin-role">Administrator</p>
+                    </div>
+                </div>
+                <button class="logout-btn" onclick="logout()">Logout</button>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="content-header">
+                <h1>Table Bookings</h1>
+                <div class="header-actions">
+                    <span class="welcome-text">Manage restaurant reservations</span>
+                </div>
+            </header>
+
+            <!-- Stats Cards -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; font-weight: 700;">
+                        ALL
+                    </div>
+                    <div class="stat-details">
+                        <h3 id="totalBookings">0</h3>
+                        <p>Total Bookings</p>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white; font-weight: 700;">
+                        NEW
+                    </div>
+                    <div class="stat-details">
+                        <h3 id="pendingBookings">0</h3>
+                        <p>Pending</p>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); color: white; font-weight: 700;">
+                        OK
+                    </div>
+                    <div class="stat-details">
+                        <h3 id="confirmedBookings">0</h3>
+                        <p>Confirmed</p>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon" style="background: linear-gradient(135deg, #fa709a 0%, #fee140 100%); color: white; font-weight: 700;">
+                        TODAY
+                    </div>
+                    <div class="stat-details">
+                        <h3 id="todayBookings">0</h3>
+                        <p>Today's Bookings</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Search and Filters -->
+            <div class="content-section">
+                <div class="search-bar">
+                    <input type="text" id="searchInput" placeholder="Search by name or phone...">
+                </div>
+                
+                <div style="display: flex; gap: 15px; margin-bottom: 20px;">
+                    <select id="statusFilter" style="padding: 10px; border-radius: 8px; border: 2px solid #e0e0e0;">
+                        <option value="">All Status</option>
+                        <option value="pending">Pending</option>
+                        <option value="confirmed">Confirmed</option>
+                        <option value="cancelled">Cancelled</option>
+                        <option value="completed">Completed</option>
+                    </select>
+                    <input type="date" id="dateFilter" style="padding: 10px; border-radius: 8px; border: 2px solid #e0e0e0;">
+                </div>
+
+                <!-- Bookings Table -->
+                <div class="table-container">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Phone</th>
+                                <th>Party Size</th>
+                                <th>Date</th>
+                                <th>Time</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="bookingsTable">
+                            <tr>
+                                <td colspan="7" style="text-align: center; padding: 40px;">
+                                    Loading bookings...
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Pagination -->
+                <div class="pagination" id="pagination"></div>
+            </div>
+        </main>
+    </div>
+
+    <script src="admin-script.js"></script>
+    <script>
+        let currentPage = 1;
+        let totalPages = 1;
+        let searchQuery = '';
+        let statusFilter = '';
+        let dateFilter = '';
+
+        // Set admin name
+        const user = JSON.parse(localStorage.getItem('adminUser') || '{}');
+        document.getElementById('adminName').textContent = user.name || 'Admin';
+        const initials = user.name ? user.name.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2) : 'AD';
+        document.getElementById('adminInitials').textContent = initials;
+
+        // Load bookings statistics
+        async function loadStats() {
+            const token = localStorage.getItem('adminToken');
+            
+            try {
+                const response = await fetch('/api/bookings/stats/summary', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    document.getElementById('totalBookings').textContent = data.data.totalBookings;
+                    document.getElementById('pendingBookings').textContent = data.data.pendingBookings;
+                    document.getElementById('confirmedBookings').textContent = data.data.confirmedBookings;
+                    document.getElementById('todayBookings').textContent = data.data.todayBookings;
+                }
+            } catch (error) {
+                console.error('Error loading stats:', error);
+            }
+        }
+
+        // Load bookings
+        async function loadBookings(page = 1) {
+            const token = localStorage.getItem('adminToken');
+            
+            try {
+                let url = `/api/bookings?page=${page}&limit=10`;
+                if (searchQuery) url += `&search=${searchQuery}`;
+                if (statusFilter) url += `&status=${statusFilter}`;
+                if (dateFilter) url += `&date=${dateFilter}`;
+                
+                const response = await fetch(url, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    displayBookings(data.data.bookings);
+                    setupPagination(data.data.pagination);
+                } else {
+                    showToast('Failed to load bookings', 'error');
+                }
+            } catch (error) {
+                console.error('Error loading bookings:', error);
+                showToast('Error loading bookings', 'error');
+            }
+        }
+
+        function displayBookings(bookings) {
+            const tbody = document.getElementById('bookingsTable');
+            
+            if (bookings.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 40px;">No bookings found</td></tr>';
+                return;
+            }
+            
+            tbody.innerHTML = bookings.map(booking => `
+                <tr>
+                    <td><strong>${booking.name}</strong>${booking.email ? '<br><small style="color: #666;">' + booking.email + '</small>' : ''}</td>
+                    <td>${booking.phone}</td>
+                    <td>${booking.partySize} people</td>
+                    <td>${new Date(booking.date).toLocaleDateString()}</td>
+                    <td><strong>${booking.time}</strong></td>
+                    <td><span class="badge ${getStatusClass(booking.status)}">${booking.status}</span></td>
+                    <td>
+                        <div class="action-buttons">
+                            <select onchange="updateBookingStatus('${booking._id}', this.value)" style="padding: 6px 12px; border-radius: 6px; font-size: 12px; border: 1px solid #e0e0e0;">
+                                <option value="">Change Status</option>
+                                <option value="confirmed">Confirm</option>
+                                <option value="cancelled">Cancel</option>
+                                <option value="completed">Complete</option>
+                            </select>
+                            <button class="action-btn btn-delete" onclick="deleteBooking('${booking._id}', '${booking.name}')">Delete</button>
+                        </div>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function getStatusClass(status) {
+            switch(status) {
+                case 'pending': return 'badge-inactive';
+                case 'confirmed': return 'badge-active';
+                case 'cancelled': return 'badge' + ' ' + 'badge-delete';
+                case 'completed': return 'badge-admin';
+                default: return 'badge';
+            }
+        }
+
+        function setupPagination(pagination) {
+            currentPage = pagination.page;
+            totalPages = pagination.pages;
+            
+            const paginationEl = document.getElementById('pagination');
+            
+            if (totalPages <= 1) {
+                paginationEl.innerHTML = '';
+                return;
+            }
+            
+            let html = '<button onclick="loadBookings(1)" ' + (currentPage === 1 ? 'disabled' : '') + '>First</button>';
+            html += '<button onclick="loadBookings(' + (currentPage - 1) + ')" ' + (currentPage === 1 ? 'disabled' : '') + '>Previous</button>';
+            
+            for (let i = Math.max(1, currentPage - 2); i <= Math.min(totalPages, currentPage + 2); i++) {
+                html += '<button onclick="loadBookings(' + i + ')" ' + (i === currentPage ? 'class="active"' : '') + '>' + i + '</button>';
+            }
+            
+            html += '<button onclick="loadBookings(' + (currentPage + 1) + ')" ' + (currentPage === totalPages ? 'disabled' : '') + '>Next</button>';
+            html += '<button onclick="loadBookings(' + totalPages + ')" ' + (currentPage === totalPages ? 'disabled' : '') + '>Last</button>';
+            
+            paginationEl.innerHTML = html;
+        }
+
+        async function updateBookingStatus(bookingId, newStatus) {
+            if (!newStatus) return;
+            
+            const token = localStorage.getItem('adminToken');
+            
+            try {
+                const response = await fetch(`/api/bookings/${bookingId}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ status: newStatus })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showToast('Booking status updated successfully');
+                    loadBookings(currentPage);
+                    loadStats();
+                } else {
+                    showToast(data.message || 'Failed to update booking', 'error');
+                }
+            } catch (error) {
+                console.error('Error updating booking:', error);
+                showToast('Error updating booking', 'error');
+            }
+        }
+
+        async function deleteBooking(bookingId, bookingName) {
+            if (!confirmAction(`Are you sure you want to delete booking for "${bookingName}"?`)) {
+                return;
+            }
+            
+            const token = localStorage.getItem('adminToken');
+            
+            try {
+                const response = await fetch(`/api/bookings/${bookingId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showToast('Booking deleted successfully');
+                    loadBookings(currentPage);
+                    loadStats();
+                } else {
+                    showToast(data.message || 'Failed to delete booking', 'error');
+                }
+            } catch (error) {
+                console.error('Error deleting booking:', error);
+                showToast('Error deleting booking', 'error');
+            }
+        }
+
+        // Search functionality
+        document.getElementById('searchInput').addEventListener('input', (e) => {
+            searchQuery = e.target.value;
+            setTimeout(() => {
+                if (searchQuery === e.target.value) {
+                    loadBookings(1);
+                }
+            }, 500);
+        });
+
+        // Filter functionality
+        document.getElementById('statusFilter').addEventListener('change', (e) => {
+            statusFilter = e.target.value;
+            loadBookings(1);
+        });
+
+        document.getElementById('dateFilter').addEventListener('change', (e) => {
+            dateFilter = e.target.value;
+            loadBookings(1);
+        });
+
+        // Load bookings and stats on page load
+        loadStats();
+        loadBookings();
+    </script>
+</body>
+</html>

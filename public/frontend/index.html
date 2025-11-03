@@ -1,0 +1,731 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bistro 101 - Restaurant</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    
+   <!-- Navigation -->
+<nav class="navbar">
+    <div class="nav-container">
+        <div class="logo">
+            <span class="logo-text">Bistro 101</span>
+        </div>
+        
+        <!-- HAMBURGER BUTTON -->
+        <button class="hamburger" id="hamburger" aria-label="Toggle menu">
+            <span></span>
+            <span></span>
+            <span></span>
+        </button>
+        
+        <div class="nav-menu" id="navMenu">
+            <a href="index.html" class="nav-link active">Home</a>
+            <a href="about.html" class="nav-link">About</a>
+            <a href="menu.html" class="nav-link">Menu</a>
+            <a href="contact.html" class="nav-link">Contact</a>
+        </div>
+        <div class="nav-buttons">
+            <button class="login-btn" onclick="openLoginModal()">Login</button>
+            <button class="signup-btn" onclick="openSignupModal()">Sign Up</button>
+            <button class="book-table-btn">Book a Table</button>
+        </div>
+    </div>
+</nav>
+
+
+    <!-- Login Modal -->
+<div class="modal-overlay" id="loginModal">
+    <div class="modal-container">
+        <button class="close-modal" onclick="closeModal('loginModal')">&times;</button>
+        <h2 class="modal-title">Login</h2>
+        
+        <form onsubmit="handleLogin(event)">
+            <div class="form-group">
+                <input type="email" class="form-input" placeholder="Email" required>
+            </div>
+            
+            <div class="form-group">
+                <div class="form-input-wrapper">
+                    <input type="password" class="form-input" id="loginPassword" placeholder="Password" required>
+                    <button type="button" class="password-toggle" onclick="togglePassword('loginPassword')">👁️</button>
+                </div>
+            </div>
+            
+            <div class="forgot-password">
+                <a href="#">Forgot password?</a>
+            </div>
+            
+            <button type="submit" class="submit-btn">Login</button>
+        </form>
+        
+        <div class="toggle-text">
+            Don't have an account? <a onclick="switchToSignup()">Signup</a>
+        </div>
+        
+        <div class="divider">Or</div>
+        
+        <button class="social-btn facebook" onclick="loginWithFacebook()">
+            <span class="social-icon">📘</span>
+            Login with Facebook
+        </button>
+        
+        <button class="social-btn google" onclick="loginWithGoogle()">
+            <span class="social-icon">🔍</span>
+            Login with Google
+        </button>
+    </div>
+</div>
+
+<!-- Signup Modal -->
+<div class="modal-overlay" id="signupModal">
+    <div class="modal-container">
+        <button class="close-modal" onclick="closeModal('signupModal')">&times;</button>
+        <h2 class="modal-title">Signup</h2>
+        
+       <form onsubmit="handleSignup(event)">
+    <div class="form-group">
+        <input type="text" class="form-input" placeholder="Full Name" required>
+    </div>
+    
+    <div class="form-group">
+        <input type="email" class="form-input" placeholder="Email" required>
+    </div>
+            
+            <div class="form-group">
+                <div class="form-input-wrapper">
+                    <input type="password" class="form-input" id="signupPassword" placeholder="Create password" required>
+                    <button type="button" class="password-toggle" onclick="togglePassword('signupPassword')">👁️</button>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <div class="form-input-wrapper">
+                    <input type="password" class="form-input" id="confirmPassword" placeholder="Confirm password" required>
+                    <button type="button" class="password-toggle" onclick="togglePassword('confirmPassword')">👁️</button>
+                </div>
+            </div>
+            
+            <button type="submit" class="submit-btn">Signup</button>
+        </form>
+        
+        <div class="toggle-text">
+            Already have an account? <a onclick="switchToLogin()">Login</a>
+        </div>
+        
+        <div class="divider">Or</div>
+        
+        <button class="social-btn facebook" onclick="signupWithFacebook()">
+            <span class="social-icon">📘</span>
+            Login with Facebook
+        </button>
+        
+        <button class="social-btn google" onclick="signupWithGoogle()">
+            <span class="social-icon">🔍</span>
+            Login with Google
+        </button>
+    </div>
+</div>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="hero-container">
+            <div class="hero-content">
+                <div class="hero-text">
+                    <h1 class="hero-title">
+    Experience the<br>
+    Finest<br>
+    <span class="highlight1">Flavors</span> 
+</h1>
+                    </h1>
+                    <p class="hero-description">
+                        Bistro 101 creates exceptional dining where tradition meets innovation with authentic flavors and quality ingredients.
+                    </p>
+                    <button class="order-now-btn">Order Now</button>
+                </div>
+
+                <div class="hero-reviews">
+                    <div class="customer-avatars">
+                        <img src="images/customer1.jpg" alt="Customer 1" class="avatar">
+                        <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=50&h=50&fit=crop&crop=face" alt="Customer 2" class="avatar">
+                        <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=50&h=50&fit=crop&crop=face" alt="Customer 3" class="avatar">
+                    </div>
+                    <div class="review-text">
+                        <p class="review-title">Our Happy Customer</p>
+                        <div class="rating">
+                            <span class="star">⭐</span>
+                            <span class="rating-number">4.8</span>
+                            <span class="review-count">(12.5k reviews)</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="hero-image">
+                <div class="main-food-circle">
+                    <div class="main-food-image">
+                        <img src="images/pizza.jpg" alt="Paella Dish" class="food-img">
+                    </div>
+                </div>
+
+                <!-- Discount card -->
+                <div class="discount-card">
+                    <img src="https://images.unsplash.com/photo-1513104890138-7c749659a591?w=80&h=80&fit=crop" alt="Pizza" class="discount-image">
+                    <div class="discount-text">
+                        <p class="discount-item">Italian Pizza</p>
+                        <p class="discount-percentage">40% OFF</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section class="features">
+        <div class="features-container">
+            <div class="feature-item">
+                <div class="feature-icon">
+                    🍽️
+                </div>
+                <h3 class="feature-title">Delicious Food</h3>
+            </div>
+            <div class="feature-item">
+                <div class="feature-icon">
+                    👨‍🍳
+                </div>
+                <h3 class="feature-title">Professional Service</h3>
+            </div>
+            <div class="feature-item">
+                <div class="feature-icon">
+                    📋
+                </div>
+                <h3 class="feature-title">Excellent Menu</h3>
+            </div>
+        </div>
+    </section>
+
+    <!-- About Section -->
+    <section class="about">
+        <div class="about-container">
+            <div class="about-left">
+                <div class="orange-blob">
+                    <div class="food-circle">
+                        <img src="images/Delicious-Pasta.jpg" alt="Delicious Pasta" class="about-food-img">
+                    </div>
+                </div>
+            </div>
+            
+            <div class="about-right">
+                <div class="about-content">
+                    <h2 class="about-title">About Us</h2>
+                    <p class="about-subtitle">We Always Provide Quality Fast Foods For You</p>
+                    
+                    <div class="about-video">
+                        <img src="https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=300&h=200&fit=crop" alt="Restaurant Interior" class="video-thumbnail">
+                        <div class="play-button">
+                            <div class="play-icon">▶</div>
+                        </div>
+                    </div>
+                    
+                    <div class="features-list">
+                        <div class="feature-point">
+                            <div class="check-icon">✓</div>
+                            <span>Delicious & Healthy Food</span>
+                        </div>
+                        <div class="feature-point">
+                            <div class="check-icon">✓</div>
+                            <span>Specific Family & Kids Zone</span>
+                        </div>
+                        <div class="feature-point">
+                            <div class="check-icon">✓</div>
+                            <span>Best Price & Offers</span>
+                        </div>
+                        <div class="feature-point">
+                            <div class="check-icon">✓</div>
+                            <span>Made By Fresh Ingredients</span>
+                        </div>
+                        <div class="feature-point">
+                            <div class="check-icon">✓</div>
+                            <span>Music & Other Facilities</span>
+                        </div>
+                    </div>
+                    
+                    <button class="discover-btn">Discover More</button>
+                </div>
+                
+                <div class="floating-ingredients">
+                    <img src="https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=200&h=300&fit=crop" alt="Fresh Ingredients" class="ingredients-float">
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Services Section -->
+    <section class="services">
+        <div class="services-container">
+            <h2 class="services-title">Our Services</h2>
+            <p class="services-subtitle">Bistro 101 offers exceptional dining experiences where culinary traditions meet modern innovation without compromising authentic flavors or quality ingredients that define our commitment to excellence..</p>
+            
+            <div class="services-grid">
+                <div class="service-card">
+                    <div class="service-image">
+                        <img src="https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=400&h=300&fit=crop" alt="Restaurant Interior" class="service-img">
+                    </div>
+                    <div class="service-content">
+                        <div class="service-icon">🍽️</div>
+                        <h3 class="service-title">Restaurant Menu</h3>
+                        <p class="service-description">Discover our extensive menu featuring fresh, locally-sourced ingredients and expertly crafted dishes.</p>
+                    </div>
+                </div>
+                
+                <div class="service-card">
+                    <div class="service-image">
+                        <img src="https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=400&h=300&fit=crop" alt="Coffee" class="service-img">
+                    </div>
+                    <div class="service-content">
+                        <div class="service-icon">☕</div>
+                        <h3 class="service-title">Coffee Menu</h3>
+                        <p class="service-description">Premium coffee blends and artisanal beverages made by our skilled baristas using the finest beans.</p>
+                    </div>
+                </div>
+                
+                <div class="service-card">
+                    <div class="service-image">
+                        <img src="https://images.unsplash.com/photo-1600891964092-4316c288032e?w=400&h=300&fit=crop" alt="Food Service" class="service-img">
+                    </div>
+                    <div class="service-content">
+                        <div class="service-icon">🍴</div>
+                        <h3 class="service-title">Food Services</h3>
+                        <p class="service-description">Professional catering and dining services for all occasions, from intimate dinners to large events.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Menu Section -->
+    <section class="menu">
+        <div class="menu-container">
+            <h2 class="menu-title">Popular Menu</h2>
+            
+            <!-- Category Filter Tabs -->
+            <div class="menu-tabs">
+                <button class="menu-tab active" data-category="all">All</button>
+                <button class="menu-tab" data-category="burger">Burger</button>
+                <button class="menu-tab" data-category="pizza">Pizza</button>
+                <button class="menu-tab" data-category="fries">Fries</button>
+                <button class="menu-tab" data-category="ice-cream">Ice-cream</button>
+                <button class="menu-tab" data-category="coffee">Coffee</button>
+            </div>
+            
+            <!-- Menu Items Grid -->
+            <div class="menu-grid" id="menuGrid">
+                <!-- Menu items will be populated by JavaScript -->
+            </div>
+        </div>
+    </section>
+
+    <!-- Table Booking Section -->
+    <section class="booking">
+        <div class="booking-container">
+            <div class="booking-left">
+                <img src="https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=600&h=600&fit=crop" alt="Restaurant Interior" class="booking-image">
+            </div>
+            
+            <div class="booking-right">
+                <div class="booking-content">
+                    <h2 class="booking-title">Book Your Table</h2>
+                    <div class="booking-subtitle">
+                        <span class="booking-icon">>></span>
+                        <span>BOOK NOW</span>
+                        <span class="booking-icon">>></span>
+                    </div>
+                    
+                    <form class="booking-form" id="bookingForm" onsubmit="submitTableBooking(event)">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <input type="text" id="bookingName" name="name" placeholder="Name" required>
+                            </div>
+                        </div>
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <input type="tel" id="bookingPhone" name="phone" placeholder="Phone no." required>
+                            </div>
+                        </div>
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <select id="bookingGuests" name="guests" required>
+                                    <option value="">Select Party Size</option>
+                                    <option value="1">1 Person</option>
+                                    <option value="2">2 People</option>
+                                    <option value="3">3 People</option>
+                                    <option value="4">4 People</option>
+                                    <option value="5">5 People</option>
+                                    <option value="6">6 People</option>
+                                    <option value="7">7 People</option>
+                                    <option value="8">8 People</option>
+                                    <option value="8+">8+ People</option>
+                                </select>
+                                <div class="select-icon">▼</div>
+                            </div>
+                        </div>
+                        
+                        <div class="form-row form-row-split">
+                            <div class="form-group">
+                                <input type="date" id="bookingDate" name="date" required>
+                                <div class="date-icon">📅</div>
+                            </div>
+                            <div class="form-group">
+                                <select id="bookingTime" name="time" required>
+                                    <option value="">Select Time</option>
+                                    <option value="11:00">11:00 AM</option>
+                                    <option value="11:30">11:30 AM</option>
+                                    <option value="12:00">12:00 PM</option>
+                                    <option value="12:30">12:30 PM</option>
+                                    <option value="13:00">1:00 PM</option>
+                                    <option value="13:30">1:30 PM</option>
+                                    <option value="14:00">2:00 PM</option>
+                                    <option value="18:00">6:00 PM</option>
+                                    <option value="18:30">6:30 PM</option>
+                                    <option value="19:00">7:00 PM</option>
+                                    <option value="19:30">7:30 PM</option>
+                                    <option value="20:00">8:00 PM</option>
+                                    <option value="20:30">8:30 PM</option>
+                                    <option value="21:00">9:00 PM</option>
+                                </select>
+                                <div class="time-icon">🕐</div>
+                            </div>
+                        </div>
+                        
+                        <button type="submit" class="booking-submit-btn">BOOK NOW</button>
+                        
+                        <p class="booking-footer">*Powered by Delicious</p>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Customer Feedback Section -->
+    <section class="testimonials">
+        <div class="testimonials-container">
+            <div class="testimonials-header">
+                <h2 class="testimonials-title">What Our Customers Say</h2>
+                <p class="testimonials-subtitle">Join over 2,500+ satisfied customers who love dining with us</p>
+                
+                <div class="rating-summary">
+                    <div class="overall-rating">
+                        <span class="rating-number">4.8</span>
+                        <div class="rating-stars">
+                            <span class="star filled">★</span>
+                            <span class="star filled">★</span>
+                            <span class="star filled">★</span>
+                            <span class="star filled">★</span>
+                            <span class="star filled">★</span>
+                        </div>
+                        <span class="rating-text">Based on 1,247 reviews</span>
+                    </div>
+                    <button class="write-review-btn" onclick="openReviewModal()">Write a Review</button>
+                </div>
+            </div>
+
+            <div class="testimonials-slider" id="testimonialsSlider">
+                <div class="testimonial-card active" data-testimonial="0">
+                    <div class="testimonial-content">
+                        <div class="quote-icon">"</div>
+                        <p class="testimonial-text">The food here is absolutely amazing! The pasta was perfectly cooked and the service was exceptional. I'll definitely be coming back with my family.</p>
+                        <div class="testimonial-rating">
+                            <span class="star">★</span>
+                            <span class="star">★</span>
+                            <span class="star">★</span>
+                            <span class="star">★</span>
+                            <span class="star">★</span>
+                        </div>
+                    </div>
+                    <div class="testimonial-author">
+                        <img src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=80&h=80&fit=crop&crop=face" alt="Sarah Johnson" class="author-image">
+                        <div class="author-info">
+                            <h4 class="author-name">Sarah Johnson</h4>
+                            <span class="author-meta">Verified Customer • 2 days ago</span>
+                            <div class="review-source">Google Reviews</div>
+                        </div>
+                    </div>
+                    <div class="testimonial-food">
+                        <img src="https://images.unsplash.com/photo-1565299507177-b0ac66763828?w=120&h=120&fit=crop" alt="Customer's meal" class="food-image">
+                    </div>
+                </div>
+
+                <div class="testimonial-card" data-testimonial="1">
+                    <div class="testimonial-content">
+                        <div class="quote-icon">"</div>
+                        <p class="testimonial-text">Best burger in town! The atmosphere is cozy and the staff is incredibly friendly. Perfect place for a date night or family dinner.</p>
+                        <div class="testimonial-rating">
+                            <span class="star">★</span>
+                            <span class="star">★</span>
+                            <span class="star">★</span>
+                            <span class="star">★</span>
+                            <span class="star">★</span>
+                        </div>
+                    </div>
+                    <div class="testimonial-author">
+                        <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=80&h=80&fit=crop&crop=face" alt="Mike Chen" class="author-image">
+                        <div class="author-info">
+                            <h4 class="author-name">Mike Chen</h4>
+                            <span class="author-meta">Verified Customer • 5 days ago</span>
+                            <div class="review-source">Yelp</div>
+                        </div>
+                    </div>
+                    <div class="testimonial-food">
+                        <img src="https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=120&h=120&fit=crop" alt="Customer's meal" class="food-image">
+                    </div>
+                </div>
+
+                <div class="testimonial-card" data-testimonial="2">
+                    <div class="testimonial-content">
+                        <div class="quote-icon">"</div>
+                        <p class="testimonial-text">Outstanding service and delicious food! The pizza was authentic and the coffee was perfect. Highly recommend this place to everyone!</p>
+                        <div class="testimonial-rating">
+                            <span class="star">★</span>
+                            <span class="star">★</span>
+                            <span class="star">★</span>
+                            <span class="star">★</span>
+                            <span class="star">★</span>
+                        </div>
+                    </div>
+                    <div class="testimonial-author">
+                        <img src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=80&h=80&fit=crop&crop=face" alt="Emma Wilson" class="author-image">
+                        <div class="author-info">
+                            <h4 class="author-name">Emma Wilson</h4>
+                            <span class="author-meta">Verified Customer • 1 week ago</span>
+                            <div class="review-source">TripAdvisor</div>
+                        </div>
+                    </div>
+                    <div class="testimonial-food">
+                        <img src="https://images.unsplash.com/photo-1513104890138-7c749659a591?w=120&h=120&fit=crop" alt="Customer's meal" class="food-image">
+                    </div>
+                </div>
+            </div>
+
+            <div class="slider-controls">
+                <button class="slider-btn prev-btn" onclick="previousTestimonial()">‹</button>
+                <div class="slider-dots">
+                    <span class="dot active" onclick="currentTestimonial(0)"></span>
+                    <span class="dot" onclick="currentTestimonial(1)"></span>
+                    <span class="dot" onclick="currentTestimonial(2)"></span>
+                </div>
+                <button class="slider-btn next-btn" onclick="nextTestimonial()">›</button>
+            </div>
+
+            <div class="social-proof">
+                <div class="proof-item">
+                    <span class="proof-number">2,500+</span>
+                    <span class="proof-text">Happy Customers</span>
+                </div>
+                <div class="proof-item">
+                    <span class="proof-number">4.8/5</span>
+                    <span class="proof-text">Average Rating</span>
+                </div>
+                <div class="proof-item">
+                    <span class="proof-number">1,247</span>
+                    <span class="proof-text">Total Reviews</span>
+                </div>
+                <div class="proof-item">
+                    <span class="proof-number">95%</span>
+                    <span class="proof-text">Would Recommend</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Review Modal -->
+    <div class="review-modal" id="reviewModal">
+        <div class="modal-overlay" onclick="closeReviewModal()"></div>
+        <div class="review-modal-content">
+            <div class="modal-header">
+                <h3>Write a Review</h3>
+                <button class="close-btn" onclick="closeReviewModal()">&times;</button>
+            </div>
+            <form class="review-form" onsubmit="submitReview(event)">
+                <div class="rating-input">
+                    <label>Your Rating:</label>
+                    <div class="star-rating" id="starRating">
+                        <span class="star-input" data-rating="1">★</span>
+                        <span class="star-input" data-rating="2">★</span>
+                        <span class="star-input" data-rating="3">★</span>
+                        <span class="star-input" data-rating="4">★</span>
+                        <span class="star-input" data-rating="5">★</span>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="reviewName">Your Name</label>
+                    <input type="text" id="reviewName" name="name" required>
+                </div>
+                <div class="form-group">
+                    <label for="reviewEmail">Email (won't be published)</label>
+                    <input type="email" id="reviewEmail" name="email" required>
+                </div>
+                <div class="form-group">
+                    <label for="reviewText">Your Review</label>
+                    <textarea id="reviewText" name="review" rows="4" placeholder="Tell us about your experience..." required></textarea>
+                </div>
+                <button type="submit" class="submit-review-btn">Submit Review</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Cart Icon -->
+    <div class="cart-icon" id="cartIcon">
+        <span class="cart-icon-symbol">🛒</span>
+        <span class="cart-count" id="cartCount">0</span>
+    </div>
+
+    <!-- Cart Panel -->
+    <div class="cart-panel" id="cartPanel">
+        <div class="cart-header">
+            <h3>Your Cart</h3>
+            <button class="cart-close" id="cartClose">&times;</button>
+        </div>
+        <div class="cart-items" id="cartItems">
+            <!-- Cart items will be populated by JavaScript -->
+        </div>
+        <div class="cart-footer">
+            <div class="cart-total">
+                <strong>Total: $<span id="cartTotal">0.00</span></strong>
+            </div>
+            <button class="checkout-btn">Proceed to Checkout</button>
+        </div>
+    </div>
+
+    <!-- Cart Overlay -->
+    <div class="cart-overlay" id="cartOverlay"></div>
+
+    <!-- Booking Confirmation Modal -->
+    <div class="booking-confirmation-modal" id="bookingConfirmationModal">
+        <div class="modal-overlay" onclick="closeBookingConfirmation()"></div>
+        <div class="confirmation-content">
+            <div class="confirmation-icon">✓</div>
+            <h3>Booking Confirmed!</h3>
+            <p>Your table has been successfully reserved.</p>
+            <div class="confirmation-details" id="confirmationDetails">
+                <!-- Booking details will be populated by JavaScript -->
+            </div>
+            <button class="confirmation-btn" onclick="closeBookingConfirmation()">Great!</button>
+        </div>
+    </div>
+
+
+
+      <!-- Newsletter & Footer Combined Section -->
+    <section class="newsletter-footer-section">
+        <!-- Scattered Food Ingredients -->
+        <div class="ingredient ingredient-1"></div>
+        <div class="ingredient ingredient-2"></div>
+        <div class="ingredient ingredient-3"></div>
+        <div class="ingredient ingredient-4"></div>
+        <div class="ingredient ingredient-5"></div>
+        <div class="ingredient ingredient-6"></div>
+        <div class="ingredient ingredient-7"></div>
+
+        <div class="container">
+            <!-- Newsletter Section -->
+            <div class="newsletter-content">
+                <h2 class="newsletter-title">Subscribe to our newsletter</h2>
+                <p class="newsletter-subtitle">to stay up to date on all the latest news and offers from us</p>
+                
+                <form class="newsletter-form" onsubmit="subscribeNewsletter(event)">
+                    <input type="email" placeholder="Enter your email address" required class="newsletter-input">
+                    <button type="submit" class="newsletter-btn">Subscribe</button>
+                </form>
+            </div>
+
+            <!-- Footer Content -->
+            <div class="footer-content">
+                <div class="footer-section contact-info">
+                    <h3>Contact us</h3>
+                    <p>E : info@Bistro101.com</p>
+                    <p>P : +1 (234) 567-8900</p>
+                </div>
+
+                <div class="footer-section">
+                    <h3>Restaurant address:</h3>
+                    <p>123 Food Street,</p>
+                    <p>Culinary District, City 12345</p>
+                </div>
+
+                <div class="footer-section">
+                    <h3>Opening Hours:</h3>
+                    <p>Monday - Thursday: 11AM - 10PM</p>
+                    <p>Friday - Saturday: 11AM - 11PM</p>
+                    <p>Sunday: 12PM - 9PM</p>
+                </div>
+
+                <div class="footer-section">
+                    <h3>Accepted payments</h3>
+                    <div class="payment-icons">
+                        <div class="payment-icon visa">VISA</div>
+                        <div class="payment-icon mastercard">MC</div>
+                        <div class="payment-icon amex">AMEX</div>
+                        <div class="payment-icon discover">DISC</div>
+                        <div class="payment-icon afterpay">AfterPay</div>
+                        <div class="payment-icon paypal">PayPal</div>
+                        <div class="payment-icon klarna">Klarna</div>
+                        <div class="payment-icon jcb">JCB</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Second Row of Footer Content -->
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3>Menu Categories:</h3>
+                    <a href="#">Appetizers</a>
+                    <a href="#">Main Dishes</a>
+                    <a href="#">Desserts</a>
+                    <a href="#">Beverages</a>
+                </div>
+
+                <div class="footer-section">
+                    <h3>Services:</h3>
+                    <a href="#">Dine In</a>
+                    <a href="#">Takeout</a>
+                    <a href="#">Delivery</a>
+                    <a href="#">Catering</a>
+                    <a href="#">Reservations</a>
+                </div>
+
+                <div class="footer-section">
+                    <h3>Follow us on</h3>
+                    <div class="social-links">
+                        <a href="#" class="social-link">Facebook</a>
+                        <a href="#" class="social-link">Instagram</a>
+                        <a href="#" class="social-link">Twitter</a>
+                    </div>
+                </div>
+
+                <div class="footer-section">
+                    <h3>Quick Links:</h3>
+                    <a href="#">About Us</a>
+                    <a href="#">Contact</a>
+                    <a href="#">Privacy Policy</a>
+                    <a href="#">Terms of Service</a>
+                </div>
+            </div>
+
+            <!-- Footer Bottom -->
+            <div class="footer-bottom">
+                <p>© 2025 Bistro 101 Restaurant</p>
+                <p>Designed with ❤️ for food lovers</p>
+            </div>
+        </div>
+    </section>
+
+
+
+    <script src="script.js"></script>
+</body>
+</html>

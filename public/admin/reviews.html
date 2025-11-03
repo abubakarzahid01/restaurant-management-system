@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reviews - Restaurant Admin</title>
+    <link rel="stylesheet" href="admin-styles.css">
+</head>
+<body>
+    <div class="admin-wrapper">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h2>Restaurant Admin</h2>
+                <p>Management Panel</p>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="/admin/dashboard.html" class="nav-item">
+                    <span>Dashboard</span>
+                </a>
+                <a href="/admin/users.html" class="nav-item">
+                    <span>Users</span>
+                </a>
+                <a href="/admin/orders.html" class="nav-item active">
+                    <span>Orders</span>
+                </a>
+                <a href="/admin/menu-items.html" class="nav-item">
+                    <span>Menu</span>
+                </a>
+                <a href="/admin/bookings.html" class="nav-item">
+                    <span>Bookings</span>
+                </a>
+                <a href="/admin/reviews.html" class="nav-item active">
+                    <span>Reviews</span>
+                </a>
+                  <a href="/admin/newsletter.html" class="nav-item">
+                      <span>Newsletter</span>
+                </a>
+            </nav>
+            <div class="sidebar-footer">
+                <div class="admin-info">
+                    <div class="admin-avatar" id="adminInitials">AD</div>
+                    <div class="admin-details">
+                        <p class="admin-name" id="adminName">Admin User</p>
+                        <p class="admin-role">Administrator</p>
+                    </div>
+                </div>
+                <button class="logout-btn" onclick="logout()">Logout</button>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="content-header">
+                <h1>Customer Reviews</h1>
+                <div class="header-actions">
+                    <span class="welcome-text">Manage customer feedback</span>
+                </div>
+            </header>
+
+            <!-- Stats Cards -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; font-weight: 700;">
+                        ALL
+                    </div>
+                    <div class="stat-details">
+                        <h3 id="totalReviews">0</h3>
+                        <p>Total Reviews</p>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white; font-weight: 700;">
+                        NEW
+                    </div>
+                    <div class="stat-details">
+                        <h3 id="pendingReviews">0</h3>
+                        <p>Pending</p>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); color: white; font-weight: 700;">
+                        OK
+                    </div>
+                    <div class="stat-details">
+                        <h3 id="approvedReviews">0</h3>
+                        <p>Approved</p>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon" style="background: linear-gradient(135deg, #fa709a 0%, #fee140 100%); color: white; font-weight: 700;">
+                        NO
+                    </div>
+                    <div class="stat-details">
+                        <h3 id="rejectedReviews">0</h3>
+                        <p>Rejected</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Search and Filters -->
+            <div class="content-section">
+                <div class="search-bar">
+                    <input type="text" id="searchInput" placeholder="Search by name or email...">
+                </div>
+                
+                <div style="display: flex; gap: 15px; margin-bottom: 20px;">
+                    <select id="statusFilter" style="padding: 10px; border-radius: 8px; border: 2px solid #e0e0e0;">
+                        <option value="">All Status</option>
+                        <option value="pending">Pending</option>
+                        <option value="approved">Approved</option>
+                        <option value="rejected">Rejected</option>
+                    </select>
+                </div>
+
+                <!-- Reviews Table -->
+                <div class="table-container">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Customer</th>
+                                <th>Rating</th>
+                                <th>Review</th>
+                                <th>Date</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="reviewsTable">
+                            <tr>
+                                <td colspan="6" style="text-align: center; padding: 40px;">
+                                    Loading reviews...
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Pagination -->
+                <div class="pagination" id="pagination"></div>
+            </div>
+        </main>
+    </div>
+
+    <script src="admin-script.js"></script>
+    <script>
+        let currentPage = 1;
+        let totalPages = 1;
+        let searchQuery = '';
+        let statusFilter = '';
+
+        // Set admin name
+        const user = JSON.parse(localStorage.getItem('adminUser') || '{}');
+        document.getElementById('adminName').textContent = user.name || 'Admin';
+        const initials = user.name ? user.name.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2) : 'AD';
+        document.getElementById('adminInitials').textContent = initials;
+
+        // Load reviews statistics
+        async function loadStats() {
+            const token = localStorage.getItem('adminToken');
+            
+            try {
+                const response = await fetch('/api/reviews/stats/summary', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    document.getElementById('totalReviews').textContent = data.data.totalReviews;
+                    document.getElementById('pendingReviews').textContent = data.data.pendingReviews;
+                    document.getElementById('approvedReviews').textContent = data.data.approvedReviews;
+                    document.getElementById('rejectedReviews').textContent = data.data.rejectedReviews;
+                }
+            } catch (error) {
+                console.error('Error loading stats:', error);
+            }
+        }
+
+        // Load reviews
+        async function loadReviews(page = 1) {
+            const token = localStorage.getItem('adminToken');
+            
+            try {
+                let url = `/api/reviews?page=${page}&limit=10`;
+                if (searchQuery) url += `&search=${searchQuery}`;
+                if (statusFilter) url += `&status=${statusFilter}`;
+                
+                const response = await fetch(url, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    displayReviews(data.data.reviews);
+                    setupPagination(data.data.pagination);
+                } else {
+                    showToast('Failed to load reviews', 'error');
+                }
+            } catch (error) {
+                console.error('Error loading reviews:', error);
+                showToast('Error loading reviews', 'error');
+            }
+        }
+
+        function displayReviews(reviews) {
+            const tbody = document.getElementById('reviewsTable');
+            
+            if (reviews.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 40px;">No reviews found</td></tr>';
+                return;
+            }
+            
+            tbody.innerHTML = reviews.map(review => `
+                <tr>
+                    <td><strong>${review.name}</strong><br><small style="color: #666;">${review.email}</small></td>
+                    <td>${getStars(review.rating)}</td>
+                    <td style="max-width: 300px;">${review.review.substring(0, 100)}${review.review.length > 100 ? '...' : ''}</td>
+                    <td>${new Date(review.createdAt).toLocaleDateString()}</td>
+                    <td><span class="badge ${getStatusClass(review.status)}">${review.status}</span></td>
+                    <td>
+                        <div class="action-buttons">
+                            ${review.status === 'pending' ? `
+                                <button class="action-btn" style="background: #E8F5E9; color: #4CAF50;" onclick="updateReviewStatus('${review._id}', 'approved')">Approve</button>
+                                <button class="action-btn" style="background: #FFEBEE; color: #F44336;" onclick="updateReviewStatus('${review._id}', 'rejected')">Reject</button>
+                            ` : ''}
+                            <button class="action-btn btn-delete" onclick="deleteReview('${review._id}', '${review.name}')">Delete</button>
+                        </div>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function getStars(rating) {
+            let stars = '';
+            for (let i = 0; i < 5; i++) {
+                stars += i < rating ? '⭐' : '☆';
+            }
+            return stars;
+        }
+
+        function getStatusClass(status) {
+            switch(status) {
+                case 'pending': return 'badge-inactive';
+                case 'approved': return 'badge-active';
+                case 'rejected': return 'badge' + ' ' + 'badge-admin';
+                default: return 'badge';
+            }
+        }
+
+        function setupPagination(pagination) {
+            currentPage = pagination.page;
+            totalPages = pagination.pages;
+            
+            const paginationEl = document.getElementById('pagination');
+            
+            if (totalPages <= 1) {
+                paginationEl.innerHTML = '';
+                return;
+            }
+            
+            let html = '<button onclick="loadReviews(1)" ' + (currentPage === 1 ? 'disabled' : '') + '>First</button>';
+            html += '<button onclick="loadReviews(' + (currentPage - 1) + ')" ' + (currentPage === 1 ? 'disabled' : '') + '>Previous</button>';
+            
+            for (let i = Math.max(1, currentPage - 2); i <= Math.min(totalPages, currentPage + 2); i++) {
+                html += '<button onclick="loadReviews(' + i + ')" ' + (i === currentPage ? 'class="active"' : '') + '>' + i + '</button>';
+            }
+            
+            html += '<button onclick="loadReviews(' + (currentPage + 1) + ')" ' + (currentPage === totalPages ? 'disabled' : '') + '>Next</button>';
+            html += '<button onclick="loadReviews(' + totalPages + ')" ' + (currentPage === totalPages ? 'disabled' : '') + '>Last</button>';
+            
+            paginationEl.innerHTML = html;
+        }
+
+        async function updateReviewStatus(reviewId, newStatus) {
+            const token = localStorage.getItem('adminToken');
+            
+            try {
+                const response = await fetch(`/api/reviews/${reviewId}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ status: newStatus })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showToast(`Review ${newStatus} successfully`);
+                    loadReviews(currentPage);
+                    loadStats();
+                } else {
+                    showToast(data.message || 'Failed to update review', 'error');
+                }
+            } catch (error) {
+                console.error('Error updating review:', error);
+                showToast('Error updating review', 'error');
+            }
+        }
+
+        async function deleteReview(reviewId, reviewerName) {
+            if (!confirmAction(`Are you sure you want to delete review from "${reviewerName}"?`)) {
+                return;
+            }
+            
+            const token = localStorage.getItem('adminToken');
+            
+            try {
+                const response = await fetch(`/api/reviews/${reviewId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showToast('Review deleted successfully');
+                    loadReviews(currentPage);
+                    loadStats();
+                } else {
+                    showToast(data.message || 'Failed to delete review', 'error');
+                }
+            } catch (error) {
+                console.error('Error deleting review:', error);
+                showToast('Error deleting review', 'error');
+            }
+        }
+
+        // Search functionality
+        document.getElementById('searchInput').addEventListener('input', (e) => {
+            searchQuery = e.target.value;
+            setTimeout(() => {
+                if (searchQuery === e.target.value) {
+                    loadReviews(1);
+                }
+            }, 500);
+        });
+
+        // Filter functionality
+        document.getElementById('statusFilter').addEventListener('change', (e) => {
+            statusFilter = e.target.value;
+            loadReviews(1);
+        });
+
+        // Load reviews and stats on page load
+        loadStats();
+        loadReviews();
+    </script>
+</body>
+</html>

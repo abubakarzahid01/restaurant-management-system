@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>About Us - Bistro 101</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+   <!-- Navigation -->
+<nav class="navbar">
+    <div class="nav-container">
+        <div class="logo">
+            <span class="logo-text">Bistro 101</span>
+        </div>
+        
+        <!-- HAMBURGER BUTTON -->
+        <button class="hamburger" id="hamburger" aria-label="Toggle menu">
+            <span></span>
+            <span></span>
+            <span></span>
+        </button>
+        
+        <div class="nav-menu" id="navMenu">
+            <a href="index.html" class="nav-link active">Home</a>
+            <a href="about.html" class="nav-link">About</a>
+            <a href="menu.html" class="nav-link">Menu</a>
+            <a href="contact.html" class="nav-link">Contact</a>
+        </div>
+        <div class="nav-buttons">
+            <button class="login-btn" onclick="openLoginModal()">Login</button>
+            <button class="signup-btn" onclick="openSignupModal()">Sign Up</button>
+            <button class="book-table-btn">Book a Table</button>
+        </div>
+    </div>
+</nav>
+
+
+    <!-- About Hero Section -->
+    <section class="about-hero">
+        <div class="about-hero-container">
+            <h1 class="about-hero-title">About <span class="highlight">Bistro 101</span></h1>
+            <p class="about-hero-subtitle">Creating exceptional dining experiences since day one</p>
+        </div>
+    </section>
+
+    <!-- Our Story Section -->
+    <section class="our-story">
+        <div class="story-container">
+            <div class="story-left">
+                <img src="https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=600&h=700&fit=crop" alt="Restaurant Interior" class="story-image">
+            </div>
+            <div class="story-right">
+                <h2 class="story-title">Our Story</h2>
+                <p class="story-text">
+                    Bistro 101 creates exceptional dining experiences with fresh ingredients, innovative flavors, and exceptional service. We're passionate about creating memorable dining experiences for every guest.
+                </p>
+                <p class="story-text">
+                    Our chefs combine traditional cooking techniques with contemporary presentation, creating dishes that satisfy both comfort and sophistication. Every ingredient is carefully selected, and every dish is prepared with passion and attention to detail.
+                </p>
+                <div class="story-highlights">
+                    <div class="highlight-item">
+                        <h3 class="highlight-number">5+</h3>
+                        <p class="highlight-label">Years Experience</p>
+                    </div>
+                    <div class="highlight-item">
+                        <h3 class="highlight-number">1000+</h3>
+                        <p class="highlight-label">Happy Customers</p>
+                    </div>
+                    <div class="highlight-item">
+                        <h3 class="highlight-number">50+</h3>
+                        <p class="highlight-label">Menu Items</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Why Choose Us Section -->
+    <section class="why-choose">
+        <div class="why-container">
+            <h2 class="why-title">Why Choose <span class="highlight">Bistro 101</span></h2>
+            <p class="why-subtitle">What makes us special</p>
+            
+            <div class="why-grid">
+                <div class="why-card">
+                    <div class="why-icon">🍽️</div>
+                    <h3 class="why-card-title">Fresh Ingredients</h3>
+                    <p class="why-card-text">We source the finest ingredients daily to ensure quality and freshness in every dish we serve.</p>
+                </div>
+                
+                <div class="why-card">
+                    <div class="why-icon">👨‍🍳</div>
+                    <h3 class="why-card-title">Expert Chefs</h3>
+                    <p class="why-card-text">Our experienced chefs bring passion and expertise to create culinary masterpieces.</p>
+                </div>
+                
+                <div class="why-card">
+                    <div class="why-icon">⭐</div>
+                    <h3 class="why-card-title">Quality Service</h3>
+                    <p class="why-card-text">Exceptional service and warm hospitality make every visit memorable and special.</p>
+                </div>
+                
+                <div class="why-card">
+                    <div class="why-icon">🏠</div>
+                    <h3 class="why-card-title">Cozy Atmosphere</h3>
+                    <p class="why-card-text">Comfortable and inviting ambiance perfect for family dinners and special occasions.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+     <!-- Login Modal -->
+    <div class="modal-overlay" id="loginModal">
+        <div class="modal-container">
+            <button class="close-modal" onclick="closeModal('loginModal')">&times;</button>
+            <h2 class="modal-title">Login</h2>
+            
+            <form onsubmit="handleLogin(event)">
+                <div class="form-group">
+                    <input type="email" class="form-input" placeholder="Email" required>
+                </div>
+                
+                <div class="form-group">
+                    <div class="form-input-wrapper">
+                        <input type="password" class="form-input" id="loginPassword" placeholder="Password" required>
+                        <button type="button" class="password-toggle" onclick="togglePassword('loginPassword')">👁️</button>
+                    </div>
+                </div>
+                
+                <div class="forgot-password">
+                    <a href="#">Forgot password?</a>
+                </div>
+                
+                <button type="submit" class="submit-btn">Login</button>
+            </form>
+            
+            <div class="toggle-text">
+                Don't have an account? <a onclick="switchToSignup()">Signup</a>
+            </div>
+            
+            <div class="divider">Or</div>
+            
+            <button class="social-btn facebook" onclick="loginWithFacebook()">
+                <span class="social-icon">📘</span>
+                Login with Facebook
+            </button>
+            
+            <button class="social-btn google" onclick="loginWithGoogle()">
+                <span class="social-icon">🔍</span>
+                Login with Google
+            </button>
+        </div>
+    </div>
+
+    <!-- Signup Modal -->
+    <div class="modal-overlay" id="signupModal">
+        <div class="modal-container">
+            <button class="close-modal" onclick="closeModal('signupModal')">&times;</button>
+            <h2 class="modal-title">Signup</h2>
+            
+            <form onsubmit="handleSignup(event)">
+                <div class="form-group">
+                    <input type="email" class="form-input" placeholder="Email" required>
+                </div>
+                
+                <div class="form-group">
+                    <div class="form-input-wrapper">
+                        <input type="password" class="form-input" id="signupPassword" placeholder="Create password" required>
+                        <button type="button" class="password-toggle" onclick="togglePassword('signupPassword')">👁️</button>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <div class="form-input-wrapper">
+                        <input type="password" class="form-input" id="confirmPassword" placeholder="Confirm password" required>
+                        <button type="button" class="password-toggle" onclick="togglePassword('confirmPassword')">👁️</button>
+                    </div>
+                </div>
+                
+                <button type="submit" class="submit-btn">Signup</button>
+            </form>
+            
+            <div class="toggle-text">
+                Already have an account? <a onclick="switchToLogin()">Login</a>
+            </div>
+            
+            <div class="divider">Or</div>
+            
+            <button class="social-btn facebook" onclick="signupWithFacebook()">
+                <span class="social-icon">📘</span>
+                Login with Facebook
+            </button>
+            
+            <button class="social-btn google" onclick="signupWithGoogle()">
+                <span class="social-icon">🔍</span>
+                Login with Google
+            </button>
+        </div>
+    </div>
+
+    <!-- Newsletter & Footer Combined Section -->
+    <section class="newsletter-footer-section">
+        <!-- Scattered Food Ingredients -->
+        <div class="ingredient ingredient-1"></div>
+        <div class="ingredient ingredient-2"></div>
+        <div class="ingredient ingredient-3"></div>
+        <div class="ingredient ingredient-4"></div>
+        <div class="ingredient ingredient-5"></div>
+        <div class="ingredient ingredient-6"></div>
+        <div class="ingredient ingredient-7"></div>
+
+        <div class="container">
+            <!-- Newsletter Section -->
+            <div class="newsletter-content">
+                <h2 class="newsletter-title">Subscribe to our newsletter</h2>
+                <p class="newsletter-subtitle">to stay up to date on all the latest news and offers from us</p>
+                
+                <form class="newsletter-form" onsubmit="subscribeNewsletter(event)">
+                    <input type="email" placeholder="Enter your email address" required class="newsletter-input">
+                    <button type="submit" class="newsletter-btn">Subscribe</button>
+                </form>
+            </div>
+
+            <!-- Footer Content -->
+            <div class="footer-content">
+                <div class="footer-section contact-info">
+                    <h3>Contact us</h3>
+                    <p>E : info@Bistro101.com</p>
+                    <p>P : +1 (234) 567-8900</p>
+                </div>
+
+                <div class="footer-section">
+                    <h3>Restaurant address:</h3>
+                    <p>123 Food Street,</p>
+                    <p>Culinary District, City 12345</p>
+                </div>
+
+                <div class="footer-section">
+                    <h3>Opening Hours:</h3>
+                    <p>Monday - Thursday: 11AM - 10PM</p>
+                    <p>Friday - Saturday: 11AM - 11PM</p>
+                    <p>Sunday: 12PM - 9PM</p>
+                </div>
+
+                <div class="footer-section">
+                    <h3>Accepted payments</h3>
+                    <div class="payment-icons">
+                        <div class="payment-icon visa">VISA</div>
+                        <div class="payment-icon mastercard">MC</div>
+                        <div class="payment-icon amex">AMEX</div>
+                        <div class="payment-icon discover">DISC</div>
+                        <div class="payment-icon afterpay">AfterPay</div>
+                        <div class="payment-icon paypal">PayPal</div>
+                        <div class="payment-icon klarna">Klarna</div>
+                        <div class="payment-icon jcb">JCB</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Second Row of Footer Content -->
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3>Menu Categories:</h3>
+                    <a href="#">Appetizers</a>
+                    <a href="#">Main Dishes</a>
+                    <a href="#">Desserts</a>
+                    <a href="#">Beverages</a>
+                </div>
+
+                <div class="footer-section">
+                    <h3>Services:</h3>
+                    <a href="#">Dine In</a>
+                    <a href="#">Takeout</a>
+                    <a href="#">Delivery</a>
+                    <a href="#">Catering</a>
+                    <a href="#">Reservations</a>
+                </div>
+
+                <div class="footer-section">
+                    <h3>Follow us on</h3>
+                    <div class="social-links">
+                        <a href="#" class="social-link">Facebook</a>
+                        <a href="#" class="social-link">Instagram</a>
+                        <a href="#" class="social-link">Twitter</a>
+                    </div>
+                </div>
+
+                <div class="footer-section">
+                    <h3>Quick Links:</h3>
+                    <a href="#">About Us</a>
+                    <a href="#">Contact</a>
+                    <a href="#">Privacy Policy</a>
+                    <a href="#">Terms of Service</a>
+                </div>
+            </div>
+
+            <!-- Footer Bottom -->
+            <div class="footer-bottom">
+                <p>© 2025 Bistro 101 Restaurant</p>
+                <p>Designed with ❤️ for food lovers</p>
+            </div>
+        </div>
+    </section>
+
+
+
+    <script src="script.js"></script>
+</body>
+</html>

@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Newsletter - Restaurant Admin</title>
+    <link rel="stylesheet" href="admin-styles.css">
+</head>
+<body>
+    <div class="admin-wrapper">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h2>Restaurant Admin</h2>
+                <p>Management Panel</p>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="/admin/dashboard.html" class="nav-item">
+                    <span>Dashboard</span>
+                </a>
+                <a href="/admin/users.html" class="nav-item">
+                    <span>Users</span>
+                </a>
+                <a href="/admin/orders.html" class="nav-item">
+                    <span>Orders</span>
+                </a>
+                <a href="/admin/menu-items.html" class="nav-item">
+                    <span>Menu</span>
+                </a>
+                <a href="/admin/bookings.html" class="nav-item">
+                    <span>Bookings</span>
+                </a>
+                <a href="/admin/reviews.html" class="nav-item">
+                    <span>Reviews</span>
+                </a>
+                <a href="/admin/newsletter.html" class="nav-item active">
+                    <span>Newsletter</span>
+                </a>
+            </nav>
+            <div class="sidebar-footer">
+                <div class="admin-info">
+                    <div class="admin-avatar" id="adminInitials">AD</div>
+                    <div class="admin-details">
+                        <p class="admin-name" id="adminName">Admin User</p>
+                        <p class="admin-role">Administrator</p>
+                    </div>
+                </div>
+                <button class="logout-btn" onclick="logout()">Logout</button>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="content-header">
+                <h1>Newsletter Subscribers</h1>
+                <div class="header-actions">
+                    <span class="welcome-text">Manage email subscribers</span>
+                </div>
+            </header>
+
+            <!-- Stats Cards -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; font-weight: 700;">
+                        MAIL
+                    </div>
+                    <div class="stat-details">
+                        <h3 id="totalSubscribers">0</h3>
+                        <p>Active Subscribers</p>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white; font-weight: 700;">
+                        OUT
+                    </div>
+                    <div class="stat-details">
+                        <h3 id="totalUnsubscribed">0</h3>
+                        <p>Unsubscribed</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Search and Filters -->
+            <div class="content-section">
+                <div class="search-bar">
+                    <input type="text" id="searchInput" placeholder="Search by email...">
+                </div>
+
+                <!-- Subscribers Table -->
+                <div class="table-container">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Email</th>
+                                <th>Status</th>
+                                <th>Subscribed Date</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="subscribersTable">
+                            <tr>
+                                <td colspan="4" style="text-align: center; padding: 40px;">
+                                    Loading subscribers...
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Pagination -->
+                <div class="pagination" id="pagination"></div>
+            </div>
+        </main>
+    </div>
+
+    <script src="admin-script.js"></script>
+    <script>
+        let currentPage = 1;
+        let totalPages = 1;
+        let searchQuery = '';
+
+        // Set admin name
+        const user = JSON.parse(localStorage.getItem('adminUser') || '{}');
+        document.getElementById('adminName').textContent = user.name || 'Admin';
+        const initials = user.name ? user.name.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2) : 'AD';
+        document.getElementById('adminInitials').textContent = initials;
+
+        // Load newsletter statistics
+        async function loadStats() {
+            const token = localStorage.getItem('adminToken');
+            
+            try {
+                const response = await fetch('/api/newsletter/stats/summary', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    document.getElementById('totalSubscribers').textContent = data.data.totalSubscribers;
+                    document.getElementById('totalUnsubscribed').textContent = data.data.totalUnsubscribed;
+                }
+            } catch (error) {
+                console.error('Error loading stats:', error);
+            }
+        }
+
+        // Load subscribers
+        async function loadSubscribers(page = 1) {
+            const token = localStorage.getItem('adminToken');
+            
+            try {
+                let url = `/api/newsletter?page=${page}&limit=10`;
+                if (searchQuery) url += `&search=${searchQuery}`;
+                
+                const response = await fetch(url, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    displaySubscribers(data.data.subscribers);
+                    setupPagination(data.data.pagination);
+                } else {
+                    showToast('Failed to load subscribers', 'error');
+                }
+            } catch (error) {
+                console.error('Error loading subscribers:', error);
+                showToast('Error loading subscribers', 'error');
+            }
+        }
+
+        function displaySubscribers(subscribers) {
+            const tbody = document.getElementById('subscribersTable');
+            
+            if (subscribers.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; padding: 40px;">No subscribers found</td></tr>';
+                return;
+            }
+            
+            tbody.innerHTML = subscribers.map(sub => `
+                <tr>
+                    <td><strong>${sub.email}</strong></td>
+                    <td><span class="badge ${sub.isActive ? 'badge-active' : 'badge-inactive'}">${sub.isActive ? 'Active' : 'Unsubscribed'}</span></td>
+                    <td>${new Date(sub.subscribedAt).toLocaleDateString()}</td>
+                    <td>
+                        <div class="action-buttons">
+                            <button class="action-btn btn-delete" onclick="deleteSubscriber('${sub._id}', '${sub.email}')">Remove</button>
+                        </div>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function setupPagination(pagination) {
+            currentPage = pagination.page;
+            totalPages = pagination.pages;
+            
+            const paginationEl = document.getElementById('pagination');
+            
+            if (totalPages <= 1) {
+                paginationEl.innerHTML = '';
+                return;
+            }
+            
+            let html = '<button onclick="loadSubscribers(1)" ' + (currentPage === 1 ? 'disabled' : '') + '>First</button>';
+            html += '<button onclick="loadSubscribers(' + (currentPage - 1) + ')" ' + (currentPage === 1 ? 'disabled' : '') + '>Previous</button>';
+            
+            for (let i = Math.max(1, currentPage - 2); i <= Math.min(totalPages, currentPage + 2); i++) {
+                html += '<button onclick="loadSubscribers(' + i + ')" ' + (i === currentPage ? 'class="active"' : '') + '>' + i + '</button>';
+            }
+            
+            html += '<button onclick="loadSubscribers(' + (currentPage + 1) + ')" ' + (currentPage === totalPages ? 'disabled' : '') + '>Next</button>';
+            html += '<button onclick="loadSubscribers(' + totalPages + ')" ' + (currentPage === totalPages ? 'disabled' : '') + '>Last</button>';
+            
+            paginationEl.innerHTML = html;
+        }
+
+        async function deleteSubscriber(subscriberId, email) {
+            if (!confirmAction(`Are you sure you want to remove "${email}" from the newsletter?`)) {
+                return;
+            }
+            
+            const token = localStorage.getItem('adminToken');
+            
+            try {
+                const response = await fetch(`/api/newsletter/${subscriberId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showToast('Subscriber removed successfully');
+                    loadSubscribers(currentPage);
+                    loadStats();
+                } else {
+                    showToast(data.message || 'Failed to remove subscriber', 'error');
+                }
+            } catch (error) {
+                console.error('Error deleting subscriber:', error);
+                showToast('Error removing subscriber', 'error');
+            }
+        }
+
+        // Search functionality
+        document.getElementById('searchInput').addEventListener('input', (e) => {
+            searchQuery = e.target.value;
+            setTimeout(() => {
+                if (searchQuery === e.target.value) {
+                    loadSubscribers(1);
+                }
+            }, 500);
+        });
+
+        // Load subscribers and stats on page load
+        loadStats();
+        loadSubscribers();
+    </script>
+</body>
+</html>

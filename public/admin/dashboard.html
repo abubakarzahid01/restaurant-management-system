@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Restaurant Admin</title>
+    <link rel="stylesheet" href="admin-styles.css">
+</head>
+<body>
+    <div class="admin-wrapper">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h2>Restaurant Admin</h2>
+                <p>Management Panel</p>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="/admin/dashboard.html" class="nav-item active">
+                    <span>Dashboard</span>
+                </a>
+                <a href="/admin/users.html" class="nav-item">
+                    <span>Users</span>
+                </a>
+                 <a href="/admin/orders.html" class="nav-item">
+                   <span>Orders</span>
+                </a>
+                <a href="/admin/menu-items.html" class="nav-item">
+                    <span>Menu</span>
+                </a>
+                <a href="/admin/bookings.html" class="nav-item">
+                    <span>Bookings</span>
+                </a>
+                <a href="/admin/reviews.html" class="nav-item">
+                    <span>Reviews</span>
+                </a>
+                 <a href="/admin/newsletter.html" class="nav-item">
+                    <span>Newsletter</span>
+                </a>
+            </nav>
+            <div class="sidebar-footer">
+                <div class="admin-info">
+                    <div class="admin-avatar" id="adminInitials">AD</div>
+                    <div class="admin-details">
+                        <p class="admin-name" id="adminName">Admin User</p>
+                        <p class="admin-role">Administrator</p>
+                    </div>
+                </div>
+                <button class="logout-btn" onclick="logout()">Logout</button>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="content-header">
+                <h1>Dashboard</h1>
+                <div class="header-actions">
+                    <span class="welcome-text">Welcome back, <span id="welcomeName">Admin</span>!</span>
+                </div>
+            </header>
+
+            <!-- Stats Cards -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; font-weight: 700;">
+                        USERS
+                    </div>
+                    <div class="stat-details">
+                        <h3 id="totalUsers">0</h3>
+                        <p>Total Users</p>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white; font-weight: 700;">
+                        MENU
+                    </div>
+                    <div class="stat-details">
+                        <h3 id="totalMenuItems">0</h3>
+                        <p>Menu Items</p>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); color: white; font-weight: 700;">
+                        BOOK
+                    </div>
+                    <div class="stat-details">
+                        <h3 id="totalBookings">0</h3>
+                        <p>Table Bookings</p>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon" style="background: linear-gradient(135deg, #fa709a 0%, #fee140 100%); color: white; font-weight: 700;">
+                        ORDER
+                    </div>
+                    <div class="stat-details">
+                        <h3>Soon</h3>
+                        <p>Total Orders</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Users -->
+            <div class="content-section">
+                <div class="section-header">
+                    <h2>Recent Users</h2>
+                    <a href="/admin/users.html" class="view-all-link">View All</a>
+                </div>
+                <div class="table-container">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Email</th>
+                                <th>Role</th>
+                                <th>Status</th>
+                                <th>Joined</th>
+                            </tr>
+                        </thead>
+                        <tbody id="recentUsersTable">
+                            <tr>
+                                <td colspan="5" style="text-align: center; padding: 40px;">
+                                    Loading...
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="content-section">
+                <div class="section-header">
+                    <h2>Quick Actions</h2>
+                </div>
+                <div class="quick-actions">
+                    <a href="/admin/add-user.html" class="action-card">
+                        <div class="action-icon" style="font-size: 40px; font-weight: 700;">USER</div>
+                        <h3>Add New User</h3>
+                        <p>Create a new user account</p>
+                    </a>
+                    <a href="/admin/users.html" class="action-card">
+                        <div class="action-icon" style="font-size: 40px; font-weight: 700;">LIST</div>
+                        <h3>Manage Users</h3>
+                        <p>View and edit user accounts</p>
+                    </a>
+                    <a href="/admin/add-menu-item.html" class="action-card">
+                        <div class="action-icon" style="font-size: 40px; font-weight: 700;">MENU</div>
+                        <h3>Add Menu Item</h3>
+                        <p>Add new food item to menu</p>
+                    </a>
+                    <a href="/admin/bookings.html" class="action-card">
+                        <div class="action-icon" style="font-size: 40px; font-weight: 700;">TABLE</div>
+                        <h3>Manage Bookings</h3>
+                        <p>View and manage table reservations</p>
+                    </a>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="admin-script.js"></script>
+    <script>
+        // Set admin name and initials
+        const user = JSON.parse(localStorage.getItem('adminUser') || '{}');
+        document.getElementById('adminName').textContent = user.name || 'Admin';
+        document.getElementById('welcomeName').textContent = user.name || 'Admin';
+        const initials = user.name ? user.name.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2) : 'AD';
+        document.getElementById('adminInitials').textContent = initials;
+
+        // Load users statistics
+        async function loadUserStats() {
+            const token = localStorage.getItem('adminToken');
+            
+            try {
+                const response = await fetch('/api/users?limit=5', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    document.getElementById('totalUsers').textContent = data.data.pagination.total;
+                    displayRecentUsers(data.data.users);
+                }
+            } catch (error) {
+                console.error('Error loading user stats:', error);
+            }
+        }
+
+        // Load menu statistics
+        async function loadMenuStats() {
+            const token = localStorage.getItem('adminToken');
+            
+            try {
+                const response = await fetch('/api/menu?limit=1', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    document.getElementById('totalMenuItems').textContent = data.data.pagination.total;
+                }
+            } catch (error) {
+                console.error('Error loading menu stats:', error);
+            }
+        }
+
+        // Load bookings statistics
+        async function loadBookingStats() {
+            const token = localStorage.getItem('adminToken');
+            
+            try {
+                const response = await fetch('/api/bookings/stats/summary', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    document.getElementById('totalBookings').textContent = data.data.totalBookings;
+                }
+            } catch (error) {
+                console.error('Error loading booking stats:', error);
+            }
+        }
+        
+        function displayRecentUsers(users) {
+            const tbody = document.getElementById('recentUsersTable');
+            
+            if (users.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; padding: 40px;">No users found</td></tr>';
+                return;
+            }
+            
+            tbody.innerHTML = users.map(user => `
+                <tr>
+                    <td><strong>${user.name}</strong></td>
+                    <td>${user.email}</td>
+                    <td><span class="badge ${user.role === 'admin' ? 'badge-admin' : 'badge-user'}">${user.role}</span></td>
+                    <td><span class="badge ${user.isActive ? 'badge-active' : 'badge-inactive'}">${user.isActive ? 'Active' : 'Inactive'}</span></td>
+                    <td>${new Date(user.createdAt).toLocaleDateString()}</td>
+                </tr>
+            `).join('');
+        }
+        
+        // Load all stats when page loads
+        loadUserStats();
+        loadMenuStats();
+        loadBookingStats();
+    </script>
+</body>
+</html>

@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Menu Item - Restaurant Admin</title>
+    <link rel="stylesheet" href="admin-styles.css">
+</head>
+<body>
+    <div class="admin-wrapper">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+           <div class="sidebar-header">
+    <h2>Restaurant Admin</h2>
+    <p>Management Panel</p>
+</div>
+<nav class="sidebar-nav">
+    <a href="/admin/dashboard.html" class="nav-item">
+        <span>Dashboard</span>
+    </a>
+    <a href="/admin/users.html" class="nav-item">
+        <span>Users</span>
+    </a>
+    <a href="/admin/orders.html" class="nav-item">
+        <span>Orders</span>
+    </a>
+    <a href="/admin/menu-items.html" class="nav-item">
+        <span>Menu</span>
+    </a>
+     <a href="/admin/reviews.html" class="nav-item">
+        <span>Reviews</span>
+    </a>
+    <a href="/admin/newsletter.html" class="nav-item">
+    <span>Newsletter</span>
+</a>
+</nav>
+<div class="sidebar-footer">
+    <div class="admin-info">
+        <div class="admin-avatar" id="adminInitials">AD</div>
+                    <div class="admin-details">
+                        <p class="admin-name" id="adminName">Admin User</p>
+                        <p class="admin-role">Administrator</p>
+                    </div>
+                </div>
+                <button class="logout-btn" onclick="logout()">Logout</button>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="content-header">
+                <h1>Add Menu Item</h1>
+                <div class="header-actions">
+                    <a href="/admin/menu-items.html" class="btn btn-secondary">← Back to Menu</a>
+                </div>
+            </header>
+
+            <!-- Add Menu Item Form -->
+            <div class="content-section" style="max-width: 800px;">
+                <form id="addMenuForm">
+                    <div class="form-group">
+                        <label for="name">Item Name *</label>
+                        <input type="text" id="name" name="name" placeholder="e.g. Cheese Burger" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="description">Description *</label>
+                        <textarea id="description" name="description" placeholder="Describe your delicious food item..." required style="min-height: 100px; resize: vertical;"></textarea>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                        <div class="form-group">
+                            <label for="price">Price ($) *</label>
+                            <input type="number" id="price" name="price" placeholder="9.99" step="0.01" min="0" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="discount">Discount (%) </label>
+                            <input type="number" id="discount" name="discount" placeholder="0" min="0" max="100" value="0">
+                            <small style="color: #666; font-size: 12px; margin-top: 5px; display: block;">Enter 0 for no discount</small>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="category">Category *</label>
+                        <select id="category" name="category" required>
+                            <option value="">Select a category</option>
+                            <option value="Burger">Burger</option>
+                            <option value="Pizza">Pizza</option>
+                            <option value="Fries">Fries</option>
+                            <option value="Ice-cream">Ice-cream</option>
+                            <option value="Coffee">Coffee</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="image">Image URL *</label>
+                        <input type="url" id="image" name="image" placeholder="https://example.com/food-image.jpg" required>
+                        <small style="color: #666; font-size: 12px; margin-top: 5px; display: block;">Enter a valid image URL (e.g., from Unsplash, your server, etc.)</small>
+                        
+                        <!-- Image Preview -->
+                        <div id="imagePreview" style="margin-top: 15px; display: none;">
+                            <p style="font-size: 13px; font-weight: 600; margin-bottom: 8px;">Image Preview:</p>
+                            <img id="previewImg" src="" alt="Preview" style="width: 200px; height: 200px; object-fit: cover; border-radius: 12px; border: 2px solid #e0e0e0;">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>
+                            <input type="checkbox" id="isAvailable" name="isAvailable" checked style="width: auto; margin-right: 8px;">
+                            Item is available
+                        </label>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary">Add Menu Item</button>
+                        <a href="/admin/menu-items.html" class="btn btn-secondary">Cancel</a>
+                    </div>
+                </form>
+            </div>
+        </main>
+    </div>
+
+    <script src="admin-script.js"></script>
+    <script>
+        // Set admin name
+        const user = JSON.parse(localStorage.getItem('adminUser') || '{}');
+        document.getElementById('adminName').textContent = user.name || 'Admin';
+
+        // Image preview functionality
+        document.getElementById('image').addEventListener('input', (e) => {
+            const imageUrl = e.target.value;
+            const previewDiv = document.getElementById('imagePreview');
+            const previewImg = document.getElementById('previewImg');
+            
+            if (imageUrl && isValidUrl(imageUrl)) {
+                previewImg.src = imageUrl;
+                previewDiv.style.display = 'block';
+                
+                // Handle image load error
+                previewImg.onerror = () => {
+                    previewDiv.style.display = 'none';
+                };
+            } else {
+                previewDiv.style.display = 'none';
+            }
+        });
+
+        function isValidUrl(string) {
+            try {
+                new URL(string);
+                return true;
+            } catch (_) {
+                return false;
+            }
+        }
+
+        // Handle form submission
+        document.getElementById('addMenuForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const formData = {
+                name: document.getElementById('name').value,
+                description: document.getElementById('description').value,
+                price: parseFloat(document.getElementById('price').value),
+                category: document.getElementById('category').value,
+                image: document.getElementById('image').value,
+                isAvailable: document.getElementById('isAvailable').checked,
+                discount: parseInt(document.getElementById('discount').value) || 0
+            };
+            
+            const token = localStorage.getItem('adminToken');
+            
+            try {
+                const response = await fetch('/api/menu', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify(formData)
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showToast('Menu item added successfully!');
+                    setTimeout(() => {
+                        window.location.href = '/admin/menu-items.html';
+                    }, 1500);
+                } else {
+                    showToast(data.error || 'Failed to add menu item', 'error');
+                }
+            } catch (error) {
+                console.error('Error adding menu item:', error);
+                showToast('Error adding menu item', 'error');
+            }
+        });
+    </script>
+</body>
+</html>
