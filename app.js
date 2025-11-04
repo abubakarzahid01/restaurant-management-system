@@ -13,6 +13,11 @@ const usersRouter = require('./routes/users');
 const app = express();
 const port = 3000;
 
+// Serve static files for frontend and admin
+app.use('/frontend', express.static(path.join(__dirname, 'public/frontend')));
+app.use('/admin', express.static(path.join(__dirname, 'public/admin')));
+
+
 // Middleware
 app.use(cors());
 app.use(express.json());
