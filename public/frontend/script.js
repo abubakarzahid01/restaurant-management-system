@@ -1,9 +1,9 @@
-const API_BASE_URL = 'https://restaurant-backend-lf21.onrender.com';
 // ========================================
 // MODERN NAVIGATION SYSTEM
 // ========================================
 
 // Navigation Handler with Smooth Transitions
+const API_BASE_URL = 'https://restaurant-backend-lf21.onrender.com'; 
 (function() {
     'use strict';
     
@@ -344,7 +344,7 @@ let menuItems = [];
 // Fetch menu items from backend API
 async function fetchMenuItems() {
     try {
-        const response = await fetch('${API_BASE_URL}${API_BASE_URL}/api/menu');
+        const response = await fetch(`${API_BASE_URL}${API_BASE_URL}/api/menu`);
         const data = await response.json();
         
         if (data.success) {
@@ -421,7 +421,7 @@ async function subscribeNewsletter(event) {
     submitBtn.disabled = true;
     
     try {
-        const response = await fetch('${API_BASE_URL}/api/newsletter/subscribe', {
+        const response = await fetch(`${API_BASE_URL}/api/newsletter/subscribe`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -637,7 +637,7 @@ async function submitReview(event) {
     };
     
     try {
-        const response = await fetch('${API_BASE_URL}/api/reviews', {
+        const response = await fetch(`${API_BASE_URL}/api/reviews`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -1055,7 +1055,7 @@ async function submitTableBooking(event) {
     };
     
     try {
-        const response = await fetch('${API_BASE_URL}/api/bookings', {
+        const response = await fetch(`${API_BASE_URL}/api/bookings`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -1274,7 +1274,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const password = event.target.querySelector('input[type="password"]').value;
     
     try {
-        const response = await fetch('${API_BASE_URL}/api/users/login', {
+        const response = await fetch(`${API_BASE_URL}/api/users/login`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -1321,7 +1321,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     try {
-        const response = await fetch('${API_BASE_URL}/api/users/register', {
+        const response = await fetch(`${API_BASE_URL}/api/users/register`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -1532,7 +1532,7 @@ async function placeOrder(event) {
     submitBtn.disabled = true;
     
     try {
-        const response = await fetch('${API_BASE_URL}/api/orders', {
+        const response = await fetch(`${API_BASE_URL}/api/orders`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
