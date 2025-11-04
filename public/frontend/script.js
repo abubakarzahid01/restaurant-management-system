@@ -1,4 +1,5 @@
-const BASE_URL = 'https://restaurant-website.onrender.com';
+const BASE_URL = 'https://restaurant-management-system-k8tg.onrender.com';
+
 
 // ========================================
 // MODERN NAVIGATION SYSTEM
