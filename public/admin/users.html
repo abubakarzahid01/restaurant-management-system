@@ -98,146 +98,149 @@
         </main>
     </div>
 
-    <script src="admin-script.js"></script>
-    <script>
-        let currentPage = 1;
-        let totalPages = 1;
-        let searchQuery = '';
-        let roleFilter = '';
+  <script src="admin-script.js"></script>
+<script>
+    const BASE_URL = 'https://restaurant-management-system-k8tg.onrender.com';
 
-        // Set admin name
-        const user = JSON.parse(localStorage.getItem('adminUser') || '{}');
-        document.getElementById('adminName').textContent = user.name || 'Admin';
+    let currentPage = 1;
+    let totalPages = 1;
+    let searchQuery = '';
+    let roleFilter = '';
 
-        // Load users
-        async function loadUsers(page = 1) {
-            const token = localStorage.getItem('adminToken');
+    // Set admin name
+    const user = JSON.parse(localStorage.getItem('adminUser') || '{}');
+    document.getElementById('adminName').textContent = user.name || 'Admin';
+
+    // Load users
+    async function loadUsers(page = 1) {
+        const token = localStorage.getItem('adminToken');
+        
+        try {
+            let url = `${BASE_URL}/api/users?page=${page}&limit=10`;
+            if (searchQuery) url += `&search=${searchQuery}`;
+            if (roleFilter) url += `&role=${roleFilter}`;
             
-            try {
-                let url = `/api/users?page=${page}&limit=10`;
-                if (searchQuery) url += `&search=${searchQuery}`;
-                if (roleFilter) url += `&role=${roleFilter}`;
-                
-                const response = await fetch(url, {
-                    headers: {
-                        'Authorization': `Bearer ${token}`
-                    }
-                });
-                
-                const data = await response.json();
-                
-                if (data.success) {
-                    displayUsers(data.data.users);
-                    setupPagination(data.data.pagination);
-                } else {
-                    showToast('Failed to load users', 'error');
+            const response = await fetch(url, {
+                headers: {
+                    'Authorization': `Bearer ${token}`
                 }
-            } catch (error) {
-                console.error('Error loading users:', error);
-                showToast('Error loading users', 'error');
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                displayUsers(data.data.users);
+                setupPagination(data.data.pagination);
+            } else {
+                showToast('Failed to load users', 'error');
             }
+        } catch (error) {
+            console.error('Error loading users:', error);
+            showToast('Error loading users', 'error');
         }
+    }
 
-        function displayUsers(users) {
-            const tbody = document.getElementById('usersTable');
-            
-            if (users.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 40px;">No users found</td></tr>';
-                return;
-            }
-            
-            tbody.innerHTML = users.map(user => `
-                <tr>
-                    <td><strong>${user.name}</strong></td>
-                    <td>${user.email}</td>
-                    <td><span class="badge ${user.role === 'admin' ? 'badge-admin' : 'badge-user'}">${user.role}</span></td>
-                    <td><span class="badge ${user.isActive ? 'badge-active' : 'badge-inactive'}">${user.isActive ? 'Active' : 'Inactive'}</span></td>
-                    <td>${formatDate(user.createdAt)}</td>
-                    <td>
-                        <div class="action-buttons">
-                            <button class="action-btn btn-edit" onclick="editUser('${user._id}')">Edit</button>
-                            <button class="action-btn btn-delete" onclick="deleteUser('${user._id}', '${user.name}')">Delete</button>
-                        </div>
-                    </td>
-                </tr>
-            `).join('');
+    function displayUsers(users) {
+        const tbody = document.getElementById('usersTable');
+        
+        if (users.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 40px;">No users found</td></tr>';
+            return;
         }
+        
+        tbody.innerHTML = users.map(user => `
+            <tr>
+                <td><strong>${user.name}</strong></td>
+                <td>${user.email}</td>
+                <td><span class="badge ${user.role === 'admin' ? 'badge-admin' : 'badge-user'}">${user.role}</span></td>
+                <td><span class="badge ${user.isActive ? 'badge-active' : 'badge-inactive'}">${user.isActive ? 'Active' : 'Inactive'}</span></td>
+                <td>${formatDate(user.createdAt)}</td>
+                <td>
+                    <div class="action-buttons">
+                        <button class="action-btn btn-edit" onclick="editUser('${user._id}')">Edit</button>
+                        <button class="action-btn btn-delete" onclick="deleteUser('${user._id}', '${user.name}')">Delete</button>
+                    </div>
+                </td>
+            </tr>
+        `).join('');
+    }
 
-        function setupPagination(pagination) {
-            currentPage = pagination.page;
-            totalPages = pagination.pages;
-            
-            const paginationEl = document.getElementById('pagination');
-            
-            if (totalPages <= 1) {
-                paginationEl.innerHTML = '';
-                return;
-            }
-            
-            let html = '<button onclick="loadUsers(1)" ' + (currentPage === 1 ? 'disabled' : '') + '>First</button>';
-            html += '<button onclick="loadUsers(' + (currentPage - 1) + ')" ' + (currentPage === 1 ? 'disabled' : '') + '>Previous</button>';
-            
-            for (let i = Math.max(1, currentPage - 2); i <= Math.min(totalPages, currentPage + 2); i++) {
-                html += '<button onclick="loadUsers(' + i + ')" ' + (i === currentPage ? 'class="active"' : '') + '>' + i + '</button>';
-            }
-            
-            html += '<button onclick="loadUsers(' + (currentPage + 1) + ')" ' + (currentPage === totalPages ? 'disabled' : '') + '>Next</button>';
-            html += '<button onclick="loadUsers(' + totalPages + ')" ' + (currentPage === totalPages ? 'disabled' : '') + '>Last</button>';
-            
-            paginationEl.innerHTML = html;
+    function setupPagination(pagination) {
+        currentPage = pagination.page;
+        totalPages = pagination.pages;
+        
+        const paginationEl = document.getElementById('pagination');
+        
+        if (totalPages <= 1) {
+            paginationEl.innerHTML = '';
+            return;
         }
-
-        function editUser(userId) {
-            window.location.href = `/admin/edit-user.html?id=${userId}`;
+        
+        let html = '<button onclick="loadUsers(1)" ' + (currentPage === 1 ? 'disabled' : '') + '>First</button>';
+        html += '<button onclick="loadUsers(' + (currentPage - 1) + ')" ' + (currentPage === 1 ? 'disabled' : '') + '>Previous</button>';
+        
+        for (let i = Math.max(1, currentPage - 2); i <= Math.min(totalPages, currentPage + 2); i++) {
+            html += '<button onclick="loadUsers(' + i + ')" ' + (i === currentPage ? 'class="active"' : '') + '>' + i + '</button>';
         }
+        
+        html += '<button onclick="loadUsers(' + (currentPage + 1) + ')" ' + (currentPage === totalPages ? 'disabled' : '') + '>Next</button>';
+        html += '<button onclick="loadUsers(' + totalPages + ')" ' + (currentPage === totalPages ? 'disabled' : '') + '>Last</button>';
+        
+        paginationEl.innerHTML = html;
+    }
 
-        async function deleteUser(userId, userName) {
-            if (!confirmAction(`Are you sure you want to delete user "${userName}"?`)) {
-                return;
-            }
-            
-            const token = localStorage.getItem('adminToken');
-            
-            try {
-                const response = await fetch(`/api/users/${userId}`, {
-                    method: 'DELETE',
-                    headers: {
-                        'Authorization': `Bearer ${token}`
-                    }
-                });
-                
-                const data = await response.json();
-                
-                if (data.success) {
-                    showToast('User deleted successfully');
-                    loadUsers(currentPage);
-                } else {
-                    showToast(data.message || 'Failed to delete user', 'error');
+    function editUser(userId) {
+        window.location.href = `/admin/edit-user.html?id=${userId}`;
+    }
+
+    async function deleteUser(userId, userName) {
+        if (!confirmAction(`Are you sure you want to delete user "${userName}"?`)) {
+            return;
+        }
+        
+        const token = localStorage.getItem('adminToken');
+        
+        try {
+            const response = await fetch(`${BASE_URL}/api/users/${userId}`, {
+                method: 'DELETE',
+                headers: {
+                    'Authorization': `Bearer ${token}`
                 }
-            } catch (error) {
-                console.error('Error deleting user:', error);
-                showToast('Error deleting user', 'error');
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                showToast('User deleted successfully');
+                loadUsers(currentPage);
+            } else {
+                showToast(data.message || 'Failed to delete user', 'error');
             }
+        } catch (error) {
+            console.error('Error deleting user:', error);
+            showToast('Error deleting user', 'error');
         }
+    }
 
-        // Search functionality
-        document.getElementById('searchInput').addEventListener('input', (e) => {
-            searchQuery = e.target.value;
-            setTimeout(() => {
-                if (searchQuery === e.target.value) {
-                    loadUsers(1);
-                }
-            }, 500);
-        });
+    // Search functionality
+    document.getElementById('searchInput').addEventListener('input', (e) => {
+        searchQuery = e.target.value;
+        setTimeout(() => {
+            if (searchQuery === e.target.value) {
+                loadUsers(1);
+            }
+        }, 500);
+    });
 
-        // Filter functionality
-        document.getElementById('roleFilter').addEventListener('change', (e) => {
-            roleFilter = e.target.value;
-            loadUsers(1);
-        });
+    // Filter functionality
+    document.getElementById('roleFilter').addEventListener('change', (e) => {
+        roleFilter = e.target.value;
+        loadUsers(1);
+    });
 
-        // Load users on page load
-        loadUsers();
-    </script>
+    // Load users on page load
+    loadUsers();
+</script>
+
 </body>
 </html>

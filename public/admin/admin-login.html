@@ -31,52 +31,56 @@
         </div>
     </div>
 
-    <script>
-        document.getElementById('adminLoginForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            
-            const email = document.getElementById('email').value;
-            const password = document.getElementById('password').value;
-            const messageEl = document.getElementById('message');
-            
-            try {
-                const response = await fetch('/api/users/login', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ email, password })
-                });
-                
-                const data = await response.json();
-                
-                if (data.success) {
-                    if (data.data.user.role !== 'admin') {
-                        messageEl.textContent = 'Access denied. Admin privileges required.';
-                        messageEl.className = 'message error';
-                        messageEl.style.display = 'block';
-                        return;
-                    }
-                    
-                    localStorage.setItem('adminToken', data.data.token);
-                    localStorage.setItem('adminUser', JSON.stringify(data.data.user));
-                    
-                    messageEl.textContent = 'Login successful! Redirecting...';
-                    messageEl.className = 'message success';
-                    messageEl.style.display = 'block';
-                    
-                    setTimeout(() => {
-                        window.location.href = '/admin/dashboard.html';
-                    }, 1000);
-                } else {
-                    messageEl.textContent = data.message || 'Invalid email or password';
+   <script>
+    const BASE_URL = 'https://restaurant-management-system-k8tg.onrender.com';
+
+    document.getElementById('adminLoginForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        const email = document.getElementById('email').value;
+        const password = document.getElementById('password').value;
+        const messageEl = document.getElementById('message');
+
+        try {
+            const response = await fetch(`${BASE_URL}/api/users/login`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, password })
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                if (data.data.user.role !== 'admin') {
+                    messageEl.textContent = 'Access denied. Admin privileges required.';
                     messageEl.className = 'message error';
                     messageEl.style.display = 'block';
+                    return;
                 }
-            } catch (error) {
-                messageEl.textContent = 'Error connecting to server. Please try again.';
+
+                localStorage.setItem('adminToken', data.data.token);
+                localStorage.setItem('adminUser', JSON.stringify(data.data.user));
+
+                messageEl.textContent = 'Login successful! Redirecting...';
+                messageEl.className = 'message success';
+                messageEl.style.display = 'block';
+
+                setTimeout(() => {
+                    window.location.href = '/admin/dashboard.html';
+                }, 1000);
+            } else {
+                messageEl.textContent = data.message || 'Invalid email or password';
                 messageEl.className = 'message error';
                 messageEl.style.display = 'block';
             }
-        });
-    </script>
+        } catch (error) {
+            console.error('Error during login:', error);
+            messageEl.textContent = 'Error connecting to server. Please try again.';
+            messageEl.className = 'message error';
+            messageEl.style.display = 'block';
+        }
+    });
+</script>
+
 </body>
 </html>

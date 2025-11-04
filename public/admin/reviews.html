@@ -145,218 +145,186 @@
         </main>
     </div>
 
-    <script src="admin-script.js"></script>
-    <script>
-        let currentPage = 1;
-        let totalPages = 1;
-        let searchQuery = '';
-        let statusFilter = '';
+   <script src="admin-script.js"></script>
+<script>
+    const BASE_URL = 'https://restaurant-management-system-k8tg.onrender.com';
 
-        // Set admin name
-        const user = JSON.parse(localStorage.getItem('adminUser') || '{}');
-        document.getElementById('adminName').textContent = user.name || 'Admin';
-        const initials = user.name ? user.name.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2) : 'AD';
-        document.getElementById('adminInitials').textContent = initials;
+    let currentPage = 1;
+    let totalPages = 1;
+    let searchQuery = '';
+    let statusFilter = '';
 
-        // Load reviews statistics
-        async function loadStats() {
-            const token = localStorage.getItem('adminToken');
-            
-            try {
-                const response = await fetch('/api/reviews/stats/summary', {
-                    headers: {
-                        'Authorization': `Bearer ${token}`
-                    }
-                });
-                
-                const data = await response.json();
-                
-                if (data.success) {
-                    document.getElementById('totalReviews').textContent = data.data.totalReviews;
-                    document.getElementById('pendingReviews').textContent = data.data.pendingReviews;
-                    document.getElementById('approvedReviews').textContent = data.data.approvedReviews;
-                    document.getElementById('rejectedReviews').textContent = data.data.rejectedReviews;
+    // Set admin name
+    const user = JSON.parse(localStorage.getItem('adminUser') || '{}');
+    document.getElementById('adminName').textContent = user.name || 'Admin';
+    const initials = user.name ? user.name.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2) : 'AD';
+    document.getElementById('adminInitials').textContent = initials;
+
+    // Load reviews statistics
+    async function loadStats() {
+        const token = localStorage.getItem('adminToken');
+        try {
+            const response = await fetch(`${BASE_URL}/api/reviews/stats/summary`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`
                 }
-            } catch (error) {
-                console.error('Error loading stats:', error);
+            });
+            const data = await response.json();
+            if (data.success) {
+                document.getElementById('totalReviews').textContent = data.data.totalReviews;
+                document.getElementById('pendingReviews').textContent = data.data.pendingReviews;
+                document.getElementById('approvedReviews').textContent = data.data.approvedReviews;
+                document.getElementById('rejectedReviews').textContent = data.data.rejectedReviews;
             }
+        } catch (error) {
+            console.error('Error loading stats:', error);
         }
+    }
 
-        // Load reviews
-        async function loadReviews(page = 1) {
-            const token = localStorage.getItem('adminToken');
+    // Load reviews
+    async function loadReviews(page = 1) {
+        const token = localStorage.getItem('adminToken');
+        try {
+            let url = `${BASE_URL}/api/reviews?page=${page}&limit=10`;
+            if (searchQuery) url += `&search=${searchQuery}`;
+            if (statusFilter) url += `&status=${statusFilter}`;
             
-            try {
-                let url = `/api/reviews?page=${page}&limit=10`;
-                if (searchQuery) url += `&search=${searchQuery}`;
-                if (statusFilter) url += `&status=${statusFilter}`;
-                
-                const response = await fetch(url, {
-                    headers: {
-                        'Authorization': `Bearer ${token}`
-                    }
-                });
-                
-                const data = await response.json();
-                
-                if (data.success) {
-                    displayReviews(data.data.reviews);
-                    setupPagination(data.data.pagination);
-                } else {
-                    showToast('Failed to load reviews', 'error');
-                }
-            } catch (error) {
-                console.error('Error loading reviews:', error);
-                showToast('Error loading reviews', 'error');
+            const response = await fetch(url, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            const data = await response.json();
+            
+            if (data.success) {
+                displayReviews(data.data.reviews);
+                setupPagination(data.data.pagination);
+            } else {
+                showToast('Failed to load reviews', 'error');
             }
+        } catch (error) {
+            console.error('Error loading reviews:', error);
+            showToast('Error loading reviews', 'error');
         }
+    }
 
-        function displayReviews(reviews) {
-            const tbody = document.getElementById('reviewsTable');
-            
-            if (reviews.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 40px;">No reviews found</td></tr>';
-                return;
-            }
-            
-            tbody.innerHTML = reviews.map(review => `
-                <tr>
-                    <td><strong>${review.name}</strong><br><small style="color: #666;">${review.email}</small></td>
-                    <td>${getStars(review.rating)}</td>
-                    <td style="max-width: 300px;">${review.review.substring(0, 100)}${review.review.length > 100 ? '...' : ''}</td>
-                    <td>${new Date(review.createdAt).toLocaleDateString()}</td>
-                    <td><span class="badge ${getStatusClass(review.status)}">${review.status}</span></td>
-                    <td>
-                        <div class="action-buttons">
-                            ${review.status === 'pending' ? `
-                                <button class="action-btn" style="background: #E8F5E9; color: #4CAF50;" onclick="updateReviewStatus('${review._id}', 'approved')">Approve</button>
-                                <button class="action-btn" style="background: #FFEBEE; color: #F44336;" onclick="updateReviewStatus('${review._id}', 'rejected')">Reject</button>
-                            ` : ''}
-                            <button class="action-btn btn-delete" onclick="deleteReview('${review._id}', '${review.name}')">Delete</button>
-                        </div>
-                    </td>
-                </tr>
-            `).join('');
+    function displayReviews(reviews) {
+        const tbody = document.getElementById('reviewsTable');
+        if (reviews.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 40px;">No reviews found</td></tr>';
+            return;
         }
+        tbody.innerHTML = reviews.map(review => `
+            <tr>
+                <td><strong>${review.name}</strong><br><small style="color: #666;">${review.email}</small></td>
+                <td>${getStars(review.rating)}</td>
+                <td style="max-width: 300px;">${review.review.substring(0, 100)}${review.review.length > 100 ? '...' : ''}</td>
+                <td>${new Date(review.createdAt).toLocaleDateString()}</td>
+                <td><span class="badge ${getStatusClass(review.status)}">${review.status}</span></td>
+                <td>
+                    <div class="action-buttons">
+                        ${review.status === 'pending' ? `
+                            <button class="action-btn" style="background: #E8F5E9; color: #4CAF50;" onclick="updateReviewStatus('${review._id}', 'approved')">Approve</button>
+                            <button class="action-btn" style="background: #FFEBEE; color: #F44336;" onclick="updateReviewStatus('${review._id}', 'rejected')">Reject</button>
+                        ` : ''}
+                        <button class="action-btn btn-delete" onclick="deleteReview('${review._id}', '${review.name}')">Delete</button>
+                    </div>
+                </td>
+            </tr>
+        `).join('');
+    }
 
-        function getStars(rating) {
-            let stars = '';
-            for (let i = 0; i < 5; i++) {
-                stars += i < rating ? '⭐' : '☆';
-            }
-            return stars;
+    function getStars(rating) {
+        let stars = '';
+        for (let i = 0; i < 5; i++) stars += i < rating ? '⭐' : '☆';
+        return stars;
+    }
+
+    function getStatusClass(status) {
+        switch(status) {
+            case 'pending': return 'badge-inactive';
+            case 'approved': return 'badge-active';
+            case 'rejected': return 'badge badge-admin';
+            default: return 'badge';
         }
+    }
 
-        function getStatusClass(status) {
-            switch(status) {
-                case 'pending': return 'badge-inactive';
-                case 'approved': return 'badge-active';
-                case 'rejected': return 'badge' + ' ' + 'badge-admin';
-                default: return 'badge';
-            }
+    function setupPagination(pagination) {
+        currentPage = pagination.page;
+        totalPages = pagination.pages;
+        const paginationEl = document.getElementById('pagination');
+        if (totalPages <= 1) { paginationEl.innerHTML = ''; return; }
+        
+        let html = '<button onclick="loadReviews(1)" ' + (currentPage === 1 ? 'disabled' : '') + '>First</button>';
+        html += '<button onclick="loadReviews(' + (currentPage - 1) + ')" ' + (currentPage === 1 ? 'disabled' : '') + '>Previous</button>';
+        for (let i = Math.max(1, currentPage - 2); i <= Math.min(totalPages, currentPage + 2); i++) {
+            html += '<button onclick="loadReviews(' + i + ')" ' + (i === currentPage ? 'class="active"' : '') + '>' + i + '</button>';
         }
+        html += '<button onclick="loadReviews(' + (currentPage + 1) + ')" ' + (currentPage === totalPages ? 'disabled' : '') + '>Next</button>';
+        html += '<button onclick="loadReviews(' + totalPages + ')" ' + (currentPage === totalPages ? 'disabled' : '') + '>Last</button>';
+        paginationEl.innerHTML = html;
+    }
 
-        function setupPagination(pagination) {
-            currentPage = pagination.page;
-            totalPages = pagination.pages;
-            
-            const paginationEl = document.getElementById('pagination');
-            
-            if (totalPages <= 1) {
-                paginationEl.innerHTML = '';
-                return;
+    async function updateReviewStatus(reviewId, newStatus) {
+        const token = localStorage.getItem('adminToken');
+        try {
+            const response = await fetch(`${BASE_URL}/api/reviews/${reviewId}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({ status: newStatus })
+            });
+            const data = await response.json();
+            if (data.success) {
+                showToast(`Review ${newStatus} successfully`);
+                loadReviews(currentPage);
+                loadStats();
+            } else {
+                showToast(data.message || 'Failed to update review', 'error');
             }
-            
-            let html = '<button onclick="loadReviews(1)" ' + (currentPage === 1 ? 'disabled' : '') + '>First</button>';
-            html += '<button onclick="loadReviews(' + (currentPage - 1) + ')" ' + (currentPage === 1 ? 'disabled' : '') + '>Previous</button>';
-            
-            for (let i = Math.max(1, currentPage - 2); i <= Math.min(totalPages, currentPage + 2); i++) {
-                html += '<button onclick="loadReviews(' + i + ')" ' + (i === currentPage ? 'class="active"' : '') + '>' + i + '</button>';
-            }
-            
-            html += '<button onclick="loadReviews(' + (currentPage + 1) + ')" ' + (currentPage === totalPages ? 'disabled' : '') + '>Next</button>';
-            html += '<button onclick="loadReviews(' + totalPages + ')" ' + (currentPage === totalPages ? 'disabled' : '') + '>Last</button>';
-            
-            paginationEl.innerHTML = html;
+        } catch (error) {
+            console.error('Error updating review:', error);
+            showToast('Error updating review', 'error');
         }
+    }
 
-        async function updateReviewStatus(reviewId, newStatus) {
-            const token = localStorage.getItem('adminToken');
-            
-            try {
-                const response = await fetch(`/api/reviews/${reviewId}`, {
-                    method: 'PUT',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${token}`
-                    },
-                    body: JSON.stringify({ status: newStatus })
-                });
-                
-                const data = await response.json();
-                
-                if (data.success) {
-                    showToast(`Review ${newStatus} successfully`);
-                    loadReviews(currentPage);
-                    loadStats();
-                } else {
-                    showToast(data.message || 'Failed to update review', 'error');
-                }
-            } catch (error) {
-                console.error('Error updating review:', error);
-                showToast('Error updating review', 'error');
+    async function deleteReview(reviewId, reviewerName) {
+        if (!confirmAction(`Are you sure you want to delete review from "${reviewerName}"?`)) return;
+        const token = localStorage.getItem('adminToken');
+        try {
+            const response = await fetch(`${BASE_URL}/api/reviews/${reviewId}`, {
+                method: 'DELETE',
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            const data = await response.json();
+            if (data.success) {
+                showToast('Review deleted successfully');
+                loadReviews(currentPage);
+                loadStats();
+            } else {
+                showToast(data.message || 'Failed to delete review', 'error');
             }
+        } catch (error) {
+            console.error('Error deleting review:', error);
+            showToast('Error deleting review', 'error');
         }
+    }
 
-        async function deleteReview(reviewId, reviewerName) {
-            if (!confirmAction(`Are you sure you want to delete review from "${reviewerName}"?`)) {
-                return;
-            }
-            
-            const token = localStorage.getItem('adminToken');
-            
-            try {
-                const response = await fetch(`/api/reviews/${reviewId}`, {
-                    method: 'DELETE',
-                    headers: {
-                        'Authorization': `Bearer ${token}`
-                    }
-                });
-                
-                const data = await response.json();
-                
-                if (data.success) {
-                    showToast('Review deleted successfully');
-                    loadReviews(currentPage);
-                    loadStats();
-                } else {
-                    showToast(data.message || 'Failed to delete review', 'error');
-                }
-            } catch (error) {
-                console.error('Error deleting review:', error);
-                showToast('Error deleting review', 'error');
-            }
-        }
+    document.getElementById('searchInput').addEventListener('input', (e) => {
+        searchQuery = e.target.value;
+        setTimeout(() => {
+            if (searchQuery === e.target.value) loadReviews(1);
+        }, 500);
+    });
 
-        // Search functionality
-        document.getElementById('searchInput').addEventListener('input', (e) => {
-            searchQuery = e.target.value;
-            setTimeout(() => {
-                if (searchQuery === e.target.value) {
-                    loadReviews(1);
-                }
-            }, 500);
-        });
+    document.getElementById('statusFilter').addEventListener('change', (e) => {
+        statusFilter = e.target.value;
+        loadReviews(1);
+    });
 
-        // Filter functionality
-        document.getElementById('statusFilter').addEventListener('change', (e) => {
-            statusFilter = e.target.value;
-            loadReviews(1);
-        });
+    loadStats();
+    loadReviews();
+</script>
 
-        // Load reviews and stats on page load
-        loadStats();
-        loadReviews();
-    </script>
 </body>
 </html>

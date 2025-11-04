@@ -123,80 +123,81 @@
     </div>
 
     <script src="admin-script.js"></script>
-    <script>
-        // Set admin name
-        const user = JSON.parse(localStorage.getItem('adminUser') || '{}');
-        document.getElementById('adminName').textContent = user.name || 'Admin';
+<script>
+    const BASE_URL = 'https://restaurant-management-system-k8tg.onrender.com';
 
-        // Image preview functionality
-        document.getElementById('image').addEventListener('input', (e) => {
-            const imageUrl = e.target.value;
-            const previewDiv = document.getElementById('imagePreview');
-            const previewImg = document.getElementById('previewImg');
-            
-            if (imageUrl && isValidUrl(imageUrl)) {
-                previewImg.src = imageUrl;
-                previewDiv.style.display = 'block';
-                
-                // Handle image load error
-                previewImg.onerror = () => {
-                    previewDiv.style.display = 'none';
-                };
-            } else {
+    // Set admin name
+    const user = JSON.parse(localStorage.getItem('adminUser') || '{}');
+    document.getElementById('adminName').textContent = user.name || 'Admin';
+
+    // Image preview functionality
+    document.getElementById('image').addEventListener('input', (e) => {
+        const imageUrl = e.target.value;
+        const previewDiv = document.getElementById('imagePreview');
+        const previewImg = document.getElementById('previewImg');
+
+        if (imageUrl && isValidUrl(imageUrl)) {
+            previewImg.src = imageUrl;
+            previewDiv.style.display = 'block';
+            previewImg.onerror = () => {
                 previewDiv.style.display = 'none';
-            }
-        });
-
-        function isValidUrl(string) {
-            try {
-                new URL(string);
-                return true;
-            } catch (_) {
-                return false;
-            }
-        }
-
-        // Handle form submission
-        document.getElementById('addMenuForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            
-            const formData = {
-                name: document.getElementById('name').value,
-                description: document.getElementById('description').value,
-                price: parseFloat(document.getElementById('price').value),
-                category: document.getElementById('category').value,
-                image: document.getElementById('image').value,
-                isAvailable: document.getElementById('isAvailable').checked,
-                discount: parseInt(document.getElementById('discount').value) || 0
             };
-            
-            const token = localStorage.getItem('adminToken');
-            
-            try {
-                const response = await fetch('/api/menu', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${token}`
-                    },
-                    body: JSON.stringify(formData)
-                });
-                
-                const data = await response.json();
-                
-                if (data.success) {
-                    showToast('Menu item added successfully!');
-                    setTimeout(() => {
-                        window.location.href = '/admin/menu-items.html';
-                    }, 1500);
-                } else {
-                    showToast(data.error || 'Failed to add menu item', 'error');
-                }
-            } catch (error) {
-                console.error('Error adding menu item:', error);
-                showToast('Error adding menu item', 'error');
+        } else {
+            previewDiv.style.display = 'none';
+        }
+    });
+
+    function isValidUrl(string) {
+        try {
+            new URL(string);
+            return true;
+        } catch (_) {
+            return false;
+        }
+    }
+
+    // Handle form submission
+    document.getElementById('addMenuForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        const formData = {
+            name: document.getElementById('name').value,
+            description: document.getElementById('description').value,
+            price: parseFloat(document.getElementById('price').value),
+            category: document.getElementById('category').value,
+            image: document.getElementById('image').value,
+            isAvailable: document.getElementById('isAvailable').checked,
+            discount: parseInt(document.getElementById('discount').value) || 0
+        };
+
+        const token = localStorage.getItem('adminToken');
+
+        try {
+            const response = await fetch(`${BASE_URL}/api/menu`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify(formData)
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                showToast('Menu item added successfully!');
+                setTimeout(() => {
+                    window.location.href = '/admin/menu-items.html';
+                }, 1500);
+            } else {
+                showToast(data.error || 'Failed to add menu item', 'error');
             }
-        });
-    </script>
+        } catch (error) {
+            console.error('Error adding menu item:', error);
+            showToast('Error adding menu item', 'error');
+        }
+    });
+</script>
+
 </body>
 </html>

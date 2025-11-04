@@ -147,224 +147,202 @@
             </div>
         </main>
     </div>
+<script src="admin-script.js"></script>
+<script>
+    const BASE_URL = 'https://restaurant-management-system-k8tg.onrender.com';
 
-    <script src="admin-script.js"></script>
-    <script>
-        let currentPage = 1;
-        let totalPages = 1;
-        let searchQuery = '';
-        let statusFilter = '';
-        let dateFilter = '';
+    let currentPage = 1;
+    let totalPages = 1;
+    let searchQuery = '';
+    let statusFilter = '';
+    let dateFilter = '';
 
-        // Set admin name
-        const user = JSON.parse(localStorage.getItem('adminUser') || '{}');
-        document.getElementById('adminName').textContent = user.name || 'Admin';
-        const initials = user.name ? user.name.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2) : 'AD';
-        document.getElementById('adminInitials').textContent = initials;
+    // Set admin name and initials
+    const user = JSON.parse(localStorage.getItem('adminUser') || '{}');
+    document.getElementById('adminName').textContent = user.name || 'Admin';
+    const initials = user.name ? user.name.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2) : 'AD';
+    document.getElementById('adminInitials').textContent = initials;
 
-        // Load bookings statistics
-        async function loadStats() {
-            const token = localStorage.getItem('adminToken');
-            
-            try {
-                const response = await fetch('/api/bookings/stats/summary', {
-                    headers: {
-                        'Authorization': `Bearer ${token}`
-                    }
-                });
-                
-                const data = await response.json();
-                
-                if (data.success) {
-                    document.getElementById('totalBookings').textContent = data.data.totalBookings;
-                    document.getElementById('pendingBookings').textContent = data.data.pendingBookings;
-                    document.getElementById('confirmedBookings').textContent = data.data.confirmedBookings;
-                    document.getElementById('todayBookings').textContent = data.data.todayBookings;
-                }
-            } catch (error) {
-                console.error('Error loading stats:', error);
+    // Load bookings statistics
+    async function loadStats() {
+        const token = localStorage.getItem('adminToken');
+        try {
+            const response = await fetch(`${BASE_URL}/api/bookings/stats/summary`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            const data = await response.json();
+
+            if (data.success) {
+                document.getElementById('totalBookings').textContent = data.data.totalBookings;
+                document.getElementById('pendingBookings').textContent = data.data.pendingBookings;
+                document.getElementById('confirmedBookings').textContent = data.data.confirmedBookings;
+                document.getElementById('todayBookings').textContent = data.data.todayBookings;
             }
+        } catch (error) {
+            console.error('Error loading stats:', error);
+        }
+    }
+
+    // Load bookings
+    async function loadBookings(page = 1) {
+        const token = localStorage.getItem('adminToken');
+        try {
+            let url = `${BASE_URL}/api/bookings?page=${page}&limit=10`;
+            if (searchQuery) url += `&search=${searchQuery}`;
+            if (statusFilter) url += `&status=${statusFilter}`;
+            if (dateFilter) url += `&date=${dateFilter}`;
+
+            const response = await fetch(url, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            const data = await response.json();
+
+            if (data.success) {
+                displayBookings(data.data.bookings);
+                setupPagination(data.data.pagination);
+            } else {
+                showToast('Failed to load bookings', 'error');
+            }
+        } catch (error) {
+            console.error('Error loading bookings:', error);
+            showToast('Error loading bookings', 'error');
+        }
+    }
+
+    function displayBookings(bookings) {
+        const tbody = document.getElementById('bookingsTable');
+        if (bookings.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 40px;">No bookings found</td></tr>';
+            return;
         }
 
-        // Load bookings
-        async function loadBookings(page = 1) {
-            const token = localStorage.getItem('adminToken');
-            
-            try {
-                let url = `/api/bookings?page=${page}&limit=10`;
-                if (searchQuery) url += `&search=${searchQuery}`;
-                if (statusFilter) url += `&status=${statusFilter}`;
-                if (dateFilter) url += `&date=${dateFilter}`;
-                
-                const response = await fetch(url, {
-                    headers: {
-                        'Authorization': `Bearer ${token}`
-                    }
-                });
-                
-                const data = await response.json();
-                
-                if (data.success) {
-                    displayBookings(data.data.bookings);
-                    setupPagination(data.data.pagination);
-                } else {
-                    showToast('Failed to load bookings', 'error');
-                }
-            } catch (error) {
-                console.error('Error loading bookings:', error);
-                showToast('Error loading bookings', 'error');
-            }
+        tbody.innerHTML = bookings.map(booking => `
+            <tr>
+                <td><strong>${booking.name}</strong>${booking.email ? '<br><small style="color: #666;">' + booking.email + '</small>' : ''}</td>
+                <td>${booking.phone}</td>
+                <td>${booking.partySize} people</td>
+                <td>${new Date(booking.date).toLocaleDateString()}</td>
+                <td><strong>${booking.time}</strong></td>
+                <td><span class="badge ${getStatusClass(booking.status)}">${booking.status}</span></td>
+                <td>
+                    <div class="action-buttons">
+                        <select onchange="updateBookingStatus('${booking._id}', this.value)" style="padding: 6px 12px; border-radius: 6px; font-size: 12px; border: 1px solid #e0e0e0;">
+                            <option value="">Change Status</option>
+                            <option value="confirmed">Confirm</option>
+                            <option value="cancelled">Cancel</option>
+                            <option value="completed">Complete</option>
+                        </select>
+                        <button class="action-btn btn-delete" onclick="deleteBooking('${booking._id}', '${booking.name}')">Delete</button>
+                    </div>
+                </td>
+            </tr>
+        `).join('');
+    }
+
+    function getStatusClass(status) {
+        switch(status) {
+            case 'pending': return 'badge-inactive';
+            case 'confirmed': return 'badge-active';
+            case 'cancelled': return 'badge badge-delete';
+            case 'completed': return 'badge-admin';
+            default: return 'badge';
+        }
+    }
+
+    function setupPagination(pagination) {
+        currentPage = pagination.page;
+        totalPages = pagination.pages;
+        const paginationEl = document.getElementById('pagination');
+
+        if (totalPages <= 1) {
+            paginationEl.innerHTML = '';
+            return;
         }
 
-        function displayBookings(bookings) {
-            const tbody = document.getElementById('bookingsTable');
-            
-            if (bookings.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 40px;">No bookings found</td></tr>';
-                return;
-            }
-            
-            tbody.innerHTML = bookings.map(booking => `
-                <tr>
-                    <td><strong>${booking.name}</strong>${booking.email ? '<br><small style="color: #666;">' + booking.email + '</small>' : ''}</td>
-                    <td>${booking.phone}</td>
-                    <td>${booking.partySize} people</td>
-                    <td>${new Date(booking.date).toLocaleDateString()}</td>
-                    <td><strong>${booking.time}</strong></td>
-                    <td><span class="badge ${getStatusClass(booking.status)}">${booking.status}</span></td>
-                    <td>
-                        <div class="action-buttons">
-                            <select onchange="updateBookingStatus('${booking._id}', this.value)" style="padding: 6px 12px; border-radius: 6px; font-size: 12px; border: 1px solid #e0e0e0;">
-                                <option value="">Change Status</option>
-                                <option value="confirmed">Confirm</option>
-                                <option value="cancelled">Cancel</option>
-                                <option value="completed">Complete</option>
-                            </select>
-                            <button class="action-btn btn-delete" onclick="deleteBooking('${booking._id}', '${booking.name}')">Delete</button>
-                        </div>
-                    </td>
-                </tr>
-            `).join('');
+        let html = '<button onclick="loadBookings(1)" ' + (currentPage === 1 ? 'disabled' : '') + '>First</button>';
+        html += '<button onclick="loadBookings(' + (currentPage - 1) + ')" ' + (currentPage === 1 ? 'disabled' : '') + '>Previous</button>';
+        for (let i = Math.max(1, currentPage - 2); i <= Math.min(totalPages, currentPage + 2); i++) {
+            html += '<button onclick="loadBookings(' + i + ')" ' + (i === currentPage ? 'class="active"' : '') + '>' + i + '</button>';
         }
+        html += '<button onclick="loadBookings(' + (currentPage + 1) + ')" ' + (currentPage === totalPages ? 'disabled' : '') + '>Next</button>';
+        html += '<button onclick="loadBookings(' + totalPages + ')" ' + (currentPage === totalPages ? 'disabled' : '') + '>Last</button>';
+        paginationEl.innerHTML = html;
+    }
 
-        function getStatusClass(status) {
-            switch(status) {
-                case 'pending': return 'badge-inactive';
-                case 'confirmed': return 'badge-active';
-                case 'cancelled': return 'badge' + ' ' + 'badge-delete';
-                case 'completed': return 'badge-admin';
-                default: return 'badge';
+    async function updateBookingStatus(bookingId, newStatus) {
+        if (!newStatus) return;
+
+        const token = localStorage.getItem('adminToken');
+        try {
+            const response = await fetch(`${BASE_URL}/api/bookings/${bookingId}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({ status: newStatus })
+            });
+            const data = await response.json();
+
+            if (data.success) {
+                showToast('Booking status updated successfully');
+                loadBookings(currentPage);
+                loadStats();
+            } else {
+                showToast(data.message || 'Failed to update booking', 'error');
             }
+        } catch (error) {
+            console.error('Error updating booking:', error);
+            showToast('Error updating booking', 'error');
         }
+    }
 
-        function setupPagination(pagination) {
-            currentPage = pagination.page;
-            totalPages = pagination.pages;
-            
-            const paginationEl = document.getElementById('pagination');
-            
-            if (totalPages <= 1) {
-                paginationEl.innerHTML = '';
-                return;
+    async function deleteBooking(bookingId, bookingName) {
+        if (!confirmAction(`Are you sure you want to delete booking for "${bookingName}"?`)) return;
+
+        const token = localStorage.getItem('adminToken');
+        try {
+            const response = await fetch(`${BASE_URL}/api/bookings/${bookingId}`, {
+                method: 'DELETE',
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            const data = await response.json();
+
+            if (data.success) {
+                showToast('Booking deleted successfully');
+                loadBookings(currentPage);
+                loadStats();
+            } else {
+                showToast(data.message || 'Failed to delete booking', 'error');
             }
-            
-            let html = '<button onclick="loadBookings(1)" ' + (currentPage === 1 ? 'disabled' : '') + '>First</button>';
-            html += '<button onclick="loadBookings(' + (currentPage - 1) + ')" ' + (currentPage === 1 ? 'disabled' : '') + '>Previous</button>';
-            
-            for (let i = Math.max(1, currentPage - 2); i <= Math.min(totalPages, currentPage + 2); i++) {
-                html += '<button onclick="loadBookings(' + i + ')" ' + (i === currentPage ? 'class="active"' : '') + '>' + i + '</button>';
-            }
-            
-            html += '<button onclick="loadBookings(' + (currentPage + 1) + ')" ' + (currentPage === totalPages ? 'disabled' : '') + '>Next</button>';
-            html += '<button onclick="loadBookings(' + totalPages + ')" ' + (currentPage === totalPages ? 'disabled' : '') + '>Last</button>';
-            
-            paginationEl.innerHTML = html;
+        } catch (error) {
+            console.error('Error deleting booking:', error);
+            showToast('Error deleting booking', 'error');
         }
+    }
 
-        async function updateBookingStatus(bookingId, newStatus) {
-            if (!newStatus) return;
-            
-            const token = localStorage.getItem('adminToken');
-            
-            try {
-                const response = await fetch(`/api/bookings/${bookingId}`, {
-                    method: 'PUT',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${token}`
-                    },
-                    body: JSON.stringify({ status: newStatus })
-                });
-                
-                const data = await response.json();
-                
-                if (data.success) {
-                    showToast('Booking status updated successfully');
-                    loadBookings(currentPage);
-                    loadStats();
-                } else {
-                    showToast(data.message || 'Failed to update booking', 'error');
-                }
-            } catch (error) {
-                console.error('Error updating booking:', error);
-                showToast('Error updating booking', 'error');
-            }
-        }
+    // Search and filters
+    document.getElementById('searchInput').addEventListener('input', (e) => {
+        searchQuery = e.target.value;
+        setTimeout(() => {
+            if (searchQuery === e.target.value) loadBookings(1);
+        }, 500);
+    });
 
-        async function deleteBooking(bookingId, bookingName) {
-            if (!confirmAction(`Are you sure you want to delete booking for "${bookingName}"?`)) {
-                return;
-            }
-            
-            const token = localStorage.getItem('adminToken');
-            
-            try {
-                const response = await fetch(`/api/bookings/${bookingId}`, {
-                    method: 'DELETE',
-                    headers: {
-                        'Authorization': `Bearer ${token}`
-                    }
-                });
-                
-                const data = await response.json();
-                
-                if (data.success) {
-                    showToast('Booking deleted successfully');
-                    loadBookings(currentPage);
-                    loadStats();
-                } else {
-                    showToast(data.message || 'Failed to delete booking', 'error');
-                }
-            } catch (error) {
-                console.error('Error deleting booking:', error);
-                showToast('Error deleting booking', 'error');
-            }
-        }
+    document.getElementById('statusFilter').addEventListener('change', (e) => {
+        statusFilter = e.target.value;
+        loadBookings(1);
+    });
 
-        // Search functionality
-        document.getElementById('searchInput').addEventListener('input', (e) => {
-            searchQuery = e.target.value;
-            setTimeout(() => {
-                if (searchQuery === e.target.value) {
-                    loadBookings(1);
-                }
-            }, 500);
-        });
+    document.getElementById('dateFilter').addEventListener('change', (e) => {
+        dateFilter = e.target.value;
+        loadBookings(1);
+    });
 
-        // Filter functionality
-        document.getElementById('statusFilter').addEventListener('change', (e) => {
-            statusFilter = e.target.value;
-            loadBookings(1);
-        });
+    // Load on page start
+    loadStats();
+    loadBookings();
+</script>
 
-        document.getElementById('dateFilter').addEventListener('change', (e) => {
-            dateFilter = e.target.value;
-            loadBookings(1);
-        });
-
-        // Load bookings and stats on page load
-        loadStats();
-        loadBookings();
-    </script>
 </body>
 </html>

@@ -160,102 +160,95 @@
         </main>
     </div>
 
-    <script src="admin-script.js"></script>
-    <script>
-        // Set admin name and initials
-        const user = JSON.parse(localStorage.getItem('adminUser') || '{}');
-        document.getElementById('adminName').textContent = user.name || 'Admin';
-        document.getElementById('welcomeName').textContent = user.name || 'Admin';
-        const initials = user.name ? user.name.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2) : 'AD';
-        document.getElementById('adminInitials').textContent = initials;
+   <script src="admin-script.js"></script>
+<script>
+    const BASE_URL = 'https://restaurant-management-system-k8tg.onrender.com';
 
-        // Load users statistics
-        async function loadUserStats() {
-            const token = localStorage.getItem('adminToken');
-            
-            try {
-                const response = await fetch('/api/users?limit=5', {
-                    headers: {
-                        'Authorization': `Bearer ${token}`
-                    }
-                });
-                
-                const data = await response.json();
-                
-                if (data.success) {
-                    document.getElementById('totalUsers').textContent = data.data.pagination.total;
-                    displayRecentUsers(data.data.users);
-                }
-            } catch (error) {
-                console.error('Error loading user stats:', error);
+    // Set admin name and initials
+    const user = JSON.parse(localStorage.getItem('adminUser') || '{}');
+    document.getElementById('adminName').textContent = user.name || 'Admin';
+    document.getElementById('welcomeName').textContent = user.name || 'Admin';
+    const initials = user.name
+        ? user.name.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2)
+        : 'AD';
+    document.getElementById('adminInitials').textContent = initials;
+
+    // Load users statistics
+    async function loadUserStats() {
+        const token = localStorage.getItem('adminToken');
+        try {
+            const response = await fetch(`${BASE_URL}/api/users?limit=5`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            const data = await response.json();
+
+            if (data.success) {
+                document.getElementById('totalUsers').textContent = data.data.pagination.total;
+                displayRecentUsers(data.data.users);
             }
+        } catch (error) {
+            console.error('Error loading user stats:', error);
+        }
+    }
+
+    // Load menu statistics
+    async function loadMenuStats() {
+        const token = localStorage.getItem('adminToken');
+        try {
+            const response = await fetch(`${BASE_URL}/api/menu?limit=1`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            const data = await response.json();
+
+            if (data.success) {
+                document.getElementById('totalMenuItems').textContent = data.data.pagination.total;
+            }
+        } catch (error) {
+            console.error('Error loading menu stats:', error);
+        }
+    }
+
+    // Load bookings statistics
+    async function loadBookingStats() {
+        const token = localStorage.getItem('adminToken');
+        try {
+            const response = await fetch(`${BASE_URL}/api/bookings/stats/summary`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            const data = await response.json();
+
+            if (data.success) {
+                document.getElementById('totalBookings').textContent = data.data.totalBookings;
+            }
+        } catch (error) {
+            console.error('Error loading booking stats:', error);
+        }
+    }
+
+    // Display recent users
+    function displayRecentUsers(users) {
+        const tbody = document.getElementById('recentUsersTable');
+        if (users.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; padding: 40px;">No users found</td></tr>';
+            return;
         }
 
-        // Load menu statistics
-        async function loadMenuStats() {
-            const token = localStorage.getItem('adminToken');
-            
-            try {
-                const response = await fetch('/api/menu?limit=1', {
-                    headers: {
-                        'Authorization': `Bearer ${token}`
-                    }
-                });
-                
-                const data = await response.json();
-                
-                if (data.success) {
-                    document.getElementById('totalMenuItems').textContent = data.data.pagination.total;
-                }
-            } catch (error) {
-                console.error('Error loading menu stats:', error);
-            }
-        }
+        tbody.innerHTML = users.map(user => `
+            <tr>
+                <td><strong>${user.name}</strong></td>
+                <td>${user.email}</td>
+                <td><span class="badge ${user.role === 'admin' ? 'badge-admin' : 'badge-user'}">${user.role}</span></td>
+                <td><span class="badge ${user.isActive ? 'badge-active' : 'badge-inactive'}">${user.isActive ? 'Active' : 'Inactive'}</span></td>
+                <td>${new Date(user.createdAt).toLocaleDateString()}</td>
+            </tr>
+        `).join('');
+    }
 
-        // Load bookings statistics
-        async function loadBookingStats() {
-            const token = localStorage.getItem('adminToken');
-            
-            try {
-                const response = await fetch('/api/bookings/stats/summary', {
-                    headers: {
-                        'Authorization': `Bearer ${token}`
-                    }
-                });
-                
-                const data = await response.json();
-                
-                if (data.success) {
-                    document.getElementById('totalBookings').textContent = data.data.totalBookings;
-                }
-            } catch (error) {
-                console.error('Error loading booking stats:', error);
-            }
-        }
-        
-        function displayRecentUsers(users) {
-            const tbody = document.getElementById('recentUsersTable');
-            
-            if (users.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; padding: 40px;">No users found</td></tr>';
-                return;
-            }
-            
-            tbody.innerHTML = users.map(user => `
-                <tr>
-                    <td><strong>${user.name}</strong></td>
-                    <td>${user.email}</td>
-                    <td><span class="badge ${user.role === 'admin' ? 'badge-admin' : 'badge-user'}">${user.role}</span></td>
-                    <td><span class="badge ${user.isActive ? 'badge-active' : 'badge-inactive'}">${user.isActive ? 'Active' : 'Inactive'}</span></td>
-                    <td>${new Date(user.createdAt).toLocaleDateString()}</td>
-                </tr>
-            `).join('');
-        }
-        
-        // Load all stats when page loads
-        loadUserStats();
-        loadMenuStats();
-        loadBookingStats();
-    </script>
+    // Load all stats when page loads
+    loadUserStats();
+    loadMenuStats();
+    loadBookingStats();
+</script>
+
 </body>
 </html>

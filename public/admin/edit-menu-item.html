@@ -128,134 +128,126 @@
         </main>
     </div>
 
-    <script src="admin-script.js"></script>
-    <script>
-        // Set admin name
-        const user = JSON.parse(localStorage.getItem('adminUser') || '{}');
-        document.getElementById('adminName').textContent = user.name || 'Admin';
-        
-        // Set admin initials
-        const initials = user.name ? user.name.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2) : 'AD';
-        document.getElementById('adminInitials').textContent = initials;
+<script src="admin-script.js"></script>
+<script>
+    const BASE_URL = 'https://restaurant-management-system-k8tg.onrender.com';
 
-        // Get menu item ID from URL
-        const urlParams = new URLSearchParams(window.location.search);
-        const menuItemId = urlParams.get('id');
+    // Set admin name and initials
+    const user = JSON.parse(localStorage.getItem('adminUser') || '{}');
+    document.getElementById('adminName').textContent = user.name || 'Admin';
+    const initials = user.name ? user.name.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2) : 'AD';
+    document.getElementById('adminInitials').textContent = initials;
 
-        if (!menuItemId) {
-            alert('No menu item ID provided');
-            window.location.href = '/admin/menu-items.html';
-        }
+    // Get menu item ID from URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const menuItemId = urlParams.get('id');
 
-        // Load menu item data
-        async function loadMenuItemData() {
-            const token = localStorage.getItem('adminToken');
-            
-            try {
-                const response = await fetch(`/api/menu/${menuItemId}`, {
-                    headers: {
-                        'Authorization': `Bearer ${token}`
-                    }
-                });
-                
-                const data = await response.json();
-                
-                if (data.success) {
-                    const item = data.data;
-                    
-                    document.getElementById('menuItemId').value = item._id;
-                    document.getElementById('name').value = item.name;
-                    document.getElementById('description').value = item.description;
-                    document.getElementById('price').value = item.price;
-                    document.getElementById('discount').value = item.discount || 0;
-                    document.getElementById('category').value = item.category;
-                    document.getElementById('image').value = item.image;
-                    document.getElementById('isAvailable').checked = item.isAvailable;
-                    
-                    // Show image preview
-                    document.getElementById('previewImg').src = item.image;
-                    
-                    document.getElementById('loadingMessage').style.display = 'none';
-                    document.getElementById('editMenuForm').style.display = 'block';
-                } else {
-                    alert('Failed to load menu item data');
-                    window.location.href = '/admin/menu-items.html';
-                }
-            } catch (error) {
-                console.error('Error loading menu item:', error);
-                alert('Error loading menu item data');
+    if (!menuItemId) {
+        alert('No menu item ID provided');
+        window.location.href = '/admin/menu-items.html';
+    }
+
+    // Load menu item data
+    async function loadMenuItemData() {
+        const token = localStorage.getItem('adminToken');
+        try {
+            const response = await fetch(`${BASE_URL}/api/menu/${menuItemId}`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            const data = await response.json();
+
+            if (data.success) {
+                const item = data.data;
+                document.getElementById('menuItemId').value = item._id;
+                document.getElementById('name').value = item.name;
+                document.getElementById('description').value = item.description;
+                document.getElementById('price').value = item.price;
+                document.getElementById('discount').value = item.discount || 0;
+                document.getElementById('category').value = item.category;
+                document.getElementById('image').value = item.image;
+                document.getElementById('isAvailable').checked = item.isAvailable;
+
+                // Show image preview
+                document.getElementById('previewImg').src = item.image;
+
+                document.getElementById('loadingMessage').style.display = 'none';
+                document.getElementById('editMenuForm').style.display = 'block';
+            } else {
+                alert('Failed to load menu item data');
                 window.location.href = '/admin/menu-items.html';
             }
+        } catch (error) {
+            console.error('Error loading menu item:', error);
+            alert('Error loading menu item data');
+            window.location.href = '/admin/menu-items.html';
         }
+    }
 
-        // Image preview functionality
-        document.getElementById('image').addEventListener('input', (e) => {
-            const imageUrl = e.target.value;
-            const previewImg = document.getElementById('previewImg');
-            
-            if (imageUrl && isValidUrl(imageUrl)) {
-                previewImg.src = imageUrl;
-                
-                // Handle image load error
-                previewImg.onerror = () => {
-                    previewImg.src = document.getElementById('image').dataset.originalUrl || '';
-                };
-            }
-        });
+    // Image preview functionality
+    document.getElementById('image').addEventListener('input', (e) => {
+        const imageUrl = e.target.value;
+        const previewImg = document.getElementById('previewImg');
 
-        function isValidUrl(string) {
-            try {
-                new URL(string);
-                return true;
-            } catch (_) {
-                return false;
-            }
-        }
-
-        // Handle form submission
-        document.getElementById('editMenuForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            
-            const formData = {
-                name: document.getElementById('name').value,
-                description: document.getElementById('description').value,
-                price: parseFloat(document.getElementById('price').value),
-                category: document.getElementById('category').value,
-                image: document.getElementById('image').value,
-                isAvailable: document.getElementById('isAvailable').checked,
-                discount: parseInt(document.getElementById('discount').value) || 0
+        if (imageUrl && isValidUrl(imageUrl)) {
+            previewImg.src = imageUrl;
+            previewImg.onerror = () => {
+                previewImg.src = document.getElementById('image').dataset.originalUrl || '';
             };
-            
-            const token = localStorage.getItem('adminToken');
-            
-            try {
-                const response = await fetch(`/api/menu/${menuItemId}`, {
-                    method: 'PUT',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${token}`
-                    },
-                    body: JSON.stringify(formData)
-                });
-                
-                const data = await response.json();
-                
-                if (data.success) {
-                    showToast('Menu item updated successfully!');
-                    setTimeout(() => {
-                        window.location.href = '/admin/menu-items.html';
-                    }, 1500);
-                } else {
-                    showToast(data.error || 'Failed to update menu item', 'error');
-                }
-            } catch (error) {
-                console.error('Error updating menu item:', error);
-                showToast('Error updating menu item', 'error');
-            }
-        });
+        }
+    });
 
-        // Load menu item data on page load
-        loadMenuItemData();
-    </script>
+    function isValidUrl(string) {
+        try {
+            new URL(string);
+            return true;
+        } catch (_) {
+            return false;
+        }
+    }
+
+    // Handle form submission
+    document.getElementById('editMenuForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        const formData = {
+            name: document.getElementById('name').value,
+            description: document.getElementById('description').value,
+            price: parseFloat(document.getElementById('price').value),
+            category: document.getElementById('category').value,
+            image: document.getElementById('image').value,
+            isAvailable: document.getElementById('isAvailable').checked,
+            discount: parseInt(document.getElementById('discount').value) || 0
+        };
+
+        const token = localStorage.getItem('adminToken');
+        try {
+            const response = await fetch(`${BASE_URL}/api/menu/${menuItemId}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify(formData)
+            });
+            const data = await response.json();
+
+            if (data.success) {
+                showToast('Menu item updated successfully!');
+                setTimeout(() => {
+                    window.location.href = '/admin/menu-items.html';
+                }, 1500);
+            } else {
+                showToast(data.error || 'Failed to update menu item', 'error');
+            }
+        } catch (error) {
+            console.error('Error updating menu item:', error);
+            showToast('Error updating menu item', 'error');
+        }
+    });
+
+    // Load menu item data on page load
+    loadMenuItemData();
+</script>
+
 </body>
 </html>
