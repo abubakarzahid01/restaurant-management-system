@@ -19,9 +19,14 @@ app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
 // MongoDB connection
-mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/mywebapp', { useNewUrlParser: true, useUnifiedTopology: true })
-    .then(() => console.log('MongoDB connected'))
-    .catch(err => console.log(err));
+mongoose.connect(process.env.MONGODB_URI || 'mongodb+srv://restaurant_admin:JtLmc8BMwzqgnZDU@cluster0.i2vsj.mongodb.net/restaurantDB?retryWrites=true&w=majority', {
+    useNewUrlParser: true,
+    useUnifiedTopology: true
+})
+.then(() => console.log('MongoDB connected'))
+.catch(err => console.log(err));
+
+
 
 // Routes - Use /api/users for the API
 app.use('/api/users', usersRouter);
