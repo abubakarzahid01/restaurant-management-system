@@ -61,38 +61,6 @@ function getLocalIp() {
   return 'localhost';
 }
 
-//  TEMPORARY ROUTE — create admin once
-app.get('/create-admin-temp', async (req, res) => {
-  try {
-    const bcrypt = require('bcryptjs');
-
-    const existing = await User.findOne({ email: 'admin@example.com' });
-    if (existing) {
-      return res.json({ message: 'Admin already exists' });
-    }
-
-    const hashedPassword = await bcrypt.hash('admin123', 10);
-    const admin = new User({
-      name: 'Admin',
-      email: 'admin@example.com',
-      password: hashedPassword,
-      role: 'admin',
-      isActive: true
-    });
-
-    await admin.save();
-    res.json({
-      success: true,
-      message: 'Admin created successfully!',
-      email: 'admin@example.com',
-      password: 'admin123'
-    });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ success: false, error: err.message });
-  }
-});
-
 // Start server
 const localIp = getLocalIp();
 app.listen(port, '0.0.0.0', () => {
