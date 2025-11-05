@@ -62,32 +62,7 @@ function getLocalIp() {
 
 //  Start server
 const localIp = getLocalIp();
-// TEMP: Create admin if not exists (for first-time setup)
-app.get('/create-admin-temp', async (req, res) => {
-  try {
-    const User = require('./models/user');
-    const bcrypt = require('bcryptjs');
 
-    const existing = await User.findOne({ email: 'admin@example.com' });
-    if (existing) {
-      return res.json({ message: 'Admin already exists' });
-    }
-
-    const hashedPassword = await bcrypt.hash('admin123', 10);
-    const admin = new User({
-      name: 'Admin',
-      email: 'admin@example.com',
-      password: hashedPassword,
-      role: 'admin',
-      isActive: true
-    });
-
-    await admin.save();
-    res.json({ success: true, message: 'Admin created', email: 'admin@example.com', password: 'admin123' });
-  } catch (err) {
-    res.status(500).json({ success: false, error: err.message });
-  }
-});
 //  TEMPORARY ROUTE — delete this after running once
 const User = require('./models/user.js'); //  correct path
 
