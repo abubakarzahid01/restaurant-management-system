@@ -1,5 +1,3 @@
-const BASE_URL = 'https://restaurant-management-system-k8tg.onrender.com';
-
 // Admin Panel JavaScript - Common Functions
 
 // Check authentication on page load

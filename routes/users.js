@@ -48,44 +48,49 @@ router.post('/register', async (req, res) => {
 
 // POST login user (Public login)
 router.post('/login', async (req, res) => {
-    try {
-        const { email, password } = req.body;
-        
-        // Find user
-        const user = await User.findOne({ email: email.toLowerCase() }).select('+password');
-        if (!user) {
-            return res.status(401).json({ success: false, message: 'Invalid email or password' });
-        }
-        
-        // Check if user is active
-        if (!user.isActive) {
-            return res.status(401).json({ success: false, message: 'Account is inactive' });
-        }
-        
-        // Verify password
-       const isValidPassword = await bcrypt.compare(password, user.password);
-        if (!isValidPassword) {
-            return res.status(401).json({ success: false, message: 'Invalid email or password' });
-        }
-        
-        // Generate JWT token
-        const token = generateToken(user._id, user.role);
-        
-        res.json({
-            success: true,
-            message: 'Login successful',
-            token,
-            user: {
-                id: user._id,
-                name: user.name,
-                email: user.email,
-                role: user.role
-            }
-        });
-    } catch (error) {
-        res.status(500).json({ success: false, error: error.message });
+  try {
+    const { email, password } = req.body;
+
+    // Find user by email
+    const user = await User.findOne({ email: email.toLowerCase() }).select('+password');
+    if (!user) {
+      return res.status(401).json({ success: false, message: 'Invalid email or password' });
     }
+
+    // Check if user is active
+    if (!user.isActive) {
+      return res.status(401).json({ success: false, message: 'Account is inactive' });
+    }
+
+    // Compare password using bcrypt directly
+    const isValidPassword = await require('bcryptjs').compare(password, user.password);
+    if (!isValidPassword) {
+      return res.status(401).json({ success: false, message: 'Invalid email or password' });
+    }
+
+    // Generate token
+    const token = require('../middleware/auth').generateToken(user._id, user.role);
+
+    // Send consistent response for frontend
+    res.json({
+      success: true,
+      message: 'Login successful',
+      data: {
+        token,
+        user: {
+          id: user._id,
+          name: user.name,
+          email: user.email,
+          role: user.role
+        }
+      }
+    });
+  } catch (error) {
+    console.error('Login error:', error);
+    res.status(500).json({ success: false, error: error.message });
+  }
 });
+
 
 // ADMIN ROUTES (Authentication required)
 

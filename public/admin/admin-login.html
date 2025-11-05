@@ -30,22 +30,24 @@
             </div>
         </div>
     </div>
-
-   <script>
-    const BASE_URL = 'https://restaurant-management-system-k8tg.onrender.com';
-
+<script src="config.js"></script>
+<script src="admin-script.js"></script>
+ 
+ <script>
     document.getElementById('adminLoginForm').addEventListener('submit', async (e) => {
         e.preventDefault();
 
-        const email = document.getElementById('email').value;
-        const password = document.getElementById('password').value;
+        const email = document.getElementById('email').value.trim();
+        const password = document.getElementById('password').value.trim();
         const messageEl = document.getElementById('message');
+
+        messageEl.style.display = 'none';
 
         try {
             const response = await fetch(`${BASE_URL}/api/users/login`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email, password })
+                body: JSON.stringify({ email, password }),
             });
 
             const data = await response.json();
@@ -58,6 +60,7 @@
                     return;
                 }
 
+                // Save token and user info
                 localStorage.setItem('adminToken', data.data.token);
                 localStorage.setItem('adminUser', JSON.stringify(data.data.user));
 
@@ -67,7 +70,7 @@
 
                 setTimeout(() => {
                     window.location.href = '/admin/dashboard.html';
-                }, 1000);
+                }, 1200);
             } else {
                 messageEl.textContent = data.message || 'Invalid email or password';
                 messageEl.className = 'message error';

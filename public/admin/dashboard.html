@@ -160,10 +160,10 @@
         </main>
     </div>
 
+   <script src="config.js"></script>
    <script src="admin-script.js"></script>
-<script>
-    const BASE_URL = 'https://restaurant-management-system-k8tg.onrender.com';
 
+<script>  
     // Set admin name and initials
     const user = JSON.parse(localStorage.getItem('adminUser') || '{}');
     document.getElementById('adminName').textContent = user.name || 'Admin';
