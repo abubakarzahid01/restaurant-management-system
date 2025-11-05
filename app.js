@@ -88,6 +88,33 @@ app.get('/create-admin-temp', async (req, res) => {
     res.status(500).json({ success: false, error: err.message });
   }
 });
+//  TEMPORARY ROUTE — delete this after running once
+const User = require('./models/user.js'); //  correct path
+
+app.get('/create-admin-temp', async (req, res) => {
+  try {
+    const existing = await User.findOne({ email: 'admin@example.com' });
+    if (existing) return res.send('Admin already exists ');
+
+    const bcrypt = require('bcryptjs');
+    const hashedPassword = await bcrypt.hash('admin123', 10);
+
+    const admin = new User({
+      name: 'Admin User',
+      email: 'admin@example.com',
+      password: hashedPassword,
+      role: 'admin',
+      isActive: true
+    });
+
+    await admin.save();
+    res.send(' Admin user created successfully!');
+  } catch (err) {
+    console.error(err);
+    res.status(500).send(' Error creating admin');
+  }
+});
+
 
 app.listen(port, '0.0.0.0', () => {
   console.log(`Server running on http://${localIp}:${port}`);
