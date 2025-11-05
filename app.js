@@ -60,6 +60,20 @@ function getLocalIp() {
   }
   return 'localhost';
 }
+//  TEMPORARY ROUTE — Reset admin password if needed
+app.get('/reset-admin-password', async (req, res) => {
+  try {
+    const bcrypt = require('bcryptjs');
+    const hashedPassword = await bcrypt.hash('admin123', 10);
+    await User.updateOne(
+      { email: 'admin@example.com' },
+      { $set: { password: hashedPassword } }
+    );
+    res.send(' Admin password reset to admin123');
+  } catch (err) {
+    res.status(500).send(err.message);
+  }
+});
 
 // Start server
 const localIp = getLocalIp();
