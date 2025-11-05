@@ -13,23 +13,24 @@ const usersRouter = require('./routes/users');
 const app = express();
 const port = process.env.PORT || 3000;
 
-//  Serve static files for frontend and admin
+// Serve static files for frontend and admin
 app.use('/frontend', express.static(path.join(__dirname, 'public/frontend')));
 app.use('/admin', express.static(path.join(__dirname, 'public/admin')));
 
-//  Middleware
+// Middleware
 app.use(cors());
 app.use(express.json());
 
-//  MongoDB connection
-mongoose.connect(
-  process.env.MONGODB_URI ||
-    'mongodb+srv://restaurant_admin:JtLmc8BMwzqgnZDU@cluster0.i2vsj.mongodb.net/restaurantDB?retryWrites=true&w=majority'
-)
-.then(() => console.log('MongoDB connected'))
-.catch(err => console.error('MongoDB connection error:', err));
+// MongoDB connection
+mongoose
+  .connect(
+    process.env.MONGODB_URI ||
+      'mongodb+srv://restaurant_admin:JtLmc8BMwzqgnZDU@cluster0.i2vsj.mongodb.net/restaurantDB?retryWrites=true&w=majority'
+  )
+  .then(() => console.log('MongoDB connected'))
+  .catch(err => console.error('MongoDB connection error:', err));
 
-//  API routes
+// API routes
 app.use('/api/users', usersRouter);
 app.use('/api/menu', require('./routes/menu'));
 app.use('/api/bookings', require('./routes/bookings'));
@@ -37,17 +38,17 @@ app.use('/api/reviews', require('./routes/reviews'));
 app.use('/api/newsletter', require('./routes/newsletter'));
 app.use('/api/orders', require('./routes/orders'));
 
-//  Serve admin login directly
+// Serve admin login directly
 app.get('/admin', (req, res) => {
   res.sendFile(path.join(__dirname, 'public/admin/admin-login.html'));
 });
 
-//  Redirect root "/" to frontend
+// Redirect root "/" to frontend
 app.get('/', (req, res) => {
   res.redirect('/frontend/index.html');
 });
 
-//  Helper: Get LAN IP (for local testing)
+// Helper: Get LAN IP (for local testing)
 function getLocalIp() {
   const nets = os.networkInterfaces();
   for (const name of Object.keys(nets)) {
@@ -60,22 +61,19 @@ function getLocalIp() {
   return 'localhost';
 }
 
-//  Start server
-const localIp = getLocalIp();
-
-//  TEMPORARY ROUTE — delete this after running once
-const User = require('./models/user.js'); //  correct path
-
+//  TEMPORARY ROUTE — create admin once
 app.get('/create-admin-temp', async (req, res) => {
   try {
-    const existing = await User.findOne({ email: 'admin@example.com' });
-    if (existing) return res.send('Admin already exists ');
-
     const bcrypt = require('bcryptjs');
-    const hashedPassword = await bcrypt.hash('admin123', 10);
 
+    const existing = await User.findOne({ email: 'admin@example.com' });
+    if (existing) {
+      return res.json({ message: 'Admin already exists' });
+    }
+
+    const hashedPassword = await bcrypt.hash('admin123', 10);
     const admin = new User({
-      name: 'Admin User',
+      name: 'Admin',
       email: 'admin@example.com',
       password: hashedPassword,
       role: 'admin',
@@ -83,14 +81,20 @@ app.get('/create-admin-temp', async (req, res) => {
     });
 
     await admin.save();
-    res.send(' Admin user created successfully!');
+    res.json({
+      success: true,
+      message: 'Admin created successfully!',
+      email: 'admin@example.com',
+      password: 'admin123'
+    });
   } catch (err) {
     console.error(err);
-    res.status(500).send(' Error creating admin');
+    res.status(500).json({ success: false, error: err.message });
   }
 });
 
-
+// Start server
+const localIp = getLocalIp();
 app.listen(port, '0.0.0.0', () => {
   console.log(`Server running on http://${localIp}:${port}`);
 });
