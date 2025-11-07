@@ -1276,35 +1276,30 @@ const email = event.target.querySelector('input[type="email"]').value;
 const password = event.target.querySelector('input[type="password"]').value;
 
 try {
-    const response = await fetch(`${BASE_URL}/api/users/login`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password })
-    });
+  const response = await fetch('/api/users/login', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email, password })
+  });
 
-    const data = await response.json();
+  const data = await response.json();
 
-    if (data.success) {
-        // Corrected to use data.data.user and data.data.token
-        const user = data.data.user;
-        const token = data.data.token;
+  if (data.success) {
+    // store token + user data
+    localStorage.setItem('userToken', data.data.token);
+    localStorage.setItem('userData', JSON.stringify(data.data.user));
 
-        // Save to localStorage
-        localStorage.setItem('userToken', token);
-        localStorage.setItem('userData', JSON.stringify(user));
-
-        showNotification(`Welcome back, ${user.name}!`, 'success');
-        closeModal('loginModal');
-
-        // Update UI after login
-        updateUserUI();
-    } else {
-        showNotification(data.message || 'Invalid email or password.', 'error');
-    }
-} catch (error) {
-    console.error('Login error:', error);
-    showNotification('Error connecting to server. Please try again.', 'error');
+    showNotification(`Welcome back, ${data.data.user.name}!`, 'success');
+    closeModal('loginModal');
+    updateUserUI();
+  } else {
+    showNotification(data.message || 'Invalid email or password', 'info');
+  }
+} catch (err) {
+  console.error('Login error:', err);
+  showNotification('Error connecting to server', 'info');
 }
+
 };
     window.handleSignup = async function(event) {
     event.preventDefault();
