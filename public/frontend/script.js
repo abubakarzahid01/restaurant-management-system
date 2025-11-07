@@ -1276,7 +1276,13 @@ const email = event.target.querySelector('input[type="email"]').value;
 const password = event.target.querySelector('input[type="password"]').value;
 
 try {
-  const response = await fetch('/api/users/login', {
+  const BASE_URL =
+  window.location.hostname === "localhost"
+    ? "http://localhost:3000"
+    : "https://restaurant-management-system-k8tg.onrender.com";
+
+const response = await fetch(`${BASE_URL}/api/users/login`, {
+
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ email, password })
@@ -1299,6 +1305,7 @@ try {
   console.error('Login error:', err);
   showNotification('Error connecting to server', 'info');
 }
+
 
 };
     window.handleSignup = async function(event) {
