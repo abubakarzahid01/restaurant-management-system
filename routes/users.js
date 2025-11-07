@@ -32,19 +32,18 @@ router.post('/login', async (req, res) => {
     // Generate JWT token
     const token = require('../middleware/auth').generateToken(user._id, user.role);
 
-    res.json({
-      success: true,
-      message: 'Login successful',
-      data: {
-        token,
-        user: {
-          id: user._id,
-          name: user.name,
-          email: user.email,
-          role: user.role
-        }
-      }
-    });
+   res.json({
+  success: true,
+  message: 'Login successful',
+  token,
+  user: {
+    id: user._id,
+    name: user.name,
+    email: user.email,
+    role: user.role
+  }
+});
+
   } catch (error) {
     console.error('Login error:', error);
     res.status(500).json({ success: false, error: error.message });
