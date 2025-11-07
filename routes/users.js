@@ -62,9 +62,9 @@ router.post('/login', async (req, res) => {
       return res.status(401).json({ success: false, message: 'Account is inactive' });
     }
 
-    // Compare password using bcrypt directly
-    const isValidPassword = await require('bcryptjs').compare(password, user.password);
-    if (!isValidPassword) {
+    // Use the model's built-in comparePassword method instead of bcrypt directly
+    const isMatch = await user.comparePassword(password);
+    if (!isMatch) {
       return res.status(401).json({ success: false, message: 'Invalid email or password' });
     }
 
@@ -90,6 +90,7 @@ router.post('/login', async (req, res) => {
     res.status(500).json({ success: false, error: error.message });
   }
 });
+
 
 
 // ADMIN ROUTES (Authentication required)
