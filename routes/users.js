@@ -7,44 +7,50 @@ const jwt = require('jsonwebtoken');
 
 // PUBLIC ROUTES (No authentication required)
 
-// POST register new user (Public signup)
-router.post('/register', async (req, res) => {
-    try {
-        const { name, email, password, role = 'user' } = req.body;
-        
-        // Check if user already exists
-        const existingUser = await User.findOne({ email: email.toLowerCase() });
-        if (existingUser) {
-            return res.status(400).json({ success: false, error: 'Email already registered' });
-        }
-        
-        // Hash password
-        const hashedPassword = await bcrypt.hash(password, 10);
-        
-        // Create new user
-        const user = new User({
-            name,
-            email: email.toLowerCase(),
-            password: hashedPassword,
-            role: role === 'admin' ? 'user' : role
-        });
-        
-        await user.save();
-        
-        res.status(201).json({
-            success: true,
-            message: 'User registered successfully',
-            user: {
-                id: user._id,
-                name: user.name,
-                email: user.email,
-                role: user.role
-            }
-        });
-    } catch (error) {
-        res.status(400).json({ success: false, error: error.message });
+// POST login user (Public login)
+router.post('/login', async (req, res) => {
+  try {
+    const { email, password } = req.body;
+
+    // Find user and include password
+    const user = await User.findOne({ email: email.toLowerCase() }).select('+password');
+    if (!user) {
+      return res.status(401).json({ success: false, message: 'Invalid email or password' });
     }
+
+    // Check if active
+    if (!user.isActive) {
+      return res.status(401).json({ success: false, message: 'Account is inactive' });
+    }
+
+    // Compare password using model method
+    const isValidPassword = await user.comparePassword(password);
+    if (!isValidPassword) {
+      return res.status(401).json({ success: false, message: 'Invalid email or password' });
+    }
+
+    // Generate JWT token
+    const token = require('../middleware/auth').generateToken(user._id, user.role);
+
+    res.json({
+      success: true,
+      message: 'Login successful',
+      data: {
+        token,
+        user: {
+          id: user._id,
+          name: user.name,
+          email: user.email,
+          role: user.role
+        }
+      }
+    });
+  } catch (error) {
+    console.error('Login error:', error);
+    res.status(500).json({ success: false, error: error.message });
+  }
 });
+
 
 // POST login user (Public login)
 router.post('/login', async (req, res) => {
