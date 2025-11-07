@@ -1272,37 +1272,39 @@ document.addEventListener('DOMContentLoaded', function() {
     window.handleLogin = async function(event) {
     event.preventDefault();
     
-    const email = event.target.querySelector('input[type="email"]').value;
-    const password = event.target.querySelector('input[type="password"]').value;
-    
-    try {
-        const response = await fetch(`${BASE_URL}/api/users/login`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ email, password })
-        });
-        
-        const data = await response.json();
-        
-        if (data.success) {
-            // Store user data and token
-            localStorage.setItem('userToken', data.token);
-            localStorage.setItem('userData', JSON.stringify(data.user));
-            
-            showNotification(`Welcome back, ${data.user.name}!`, 'success');
-            closeModal('loginModal');
-            
-            // Update UI to show logged-in user
-            updateUserUI();
-        } else {
-            showNotification(data.message || 'Login failed. Please check your credentials.', 'info');
-        }
-    } catch (error) {
-        console.error('Login error:', error);
-        showNotification('Error during login. Please try again.', 'info');
+const email = event.target.querySelector('input[type="email"]').value;
+const password = event.target.querySelector('input[type="password"]').value;
+
+try {
+    const response = await fetch(`${BASE_URL}/api/users/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password })
+    });
+
+    const data = await response.json();
+
+    if (data.success) {
+        // Corrected to use data.data.user and data.data.token
+        const user = data.data.user;
+        const token = data.data.token;
+
+        // Save to localStorage
+        localStorage.setItem('userToken', token);
+        localStorage.setItem('userData', JSON.stringify(user));
+
+        showNotification(`Welcome back, ${user.name}!`, 'success');
+        closeModal('loginModal');
+
+        // Update UI after login
+        updateUserUI();
+    } else {
+        showNotification(data.message || 'Invalid email or password.', 'error');
     }
+} catch (error) {
+    console.error('Login error:', error);
+    showNotification('Error connecting to server. Please try again.', 'error');
+}
 };
     window.handleSignup = async function(event) {
     event.preventDefault();
