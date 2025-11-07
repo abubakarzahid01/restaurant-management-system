@@ -2,7 +2,8 @@ require('dotenv').config();
 const mongoose = require('mongoose');
 const User = require('./models/user');
 
-const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/my-web-app';
+const MONGODB_URI = process.env.MONGODB_URI;
+
 
 async function createAdmin() {
     try {
