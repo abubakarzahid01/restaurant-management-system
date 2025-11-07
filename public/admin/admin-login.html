@@ -52,18 +52,17 @@
 
             const data = await response.json();
 
-           if (data.success) {
-           if (data.user.role !== 'admin') {
-                 messageEl.textContent = 'Access denied. Admin privileges required.';
-                 messageEl.className = 'message error';
-                 messageEl.style.display = 'block';
-            return;
-    }
+            if (data.success) {
+                if (data.data.user.role !== 'admin') {
+                    messageEl.textContent = 'Access denied. Admin privileges required.';
+                    messageEl.className = 'message error';
+                    messageEl.style.display = 'block';
+                    return;
+                }
 
-    // Save token and user info
-    localStorage.setItem('adminToken', data.token);
-    localStorage.setItem('adminUser', JSON.stringify(data.user));
-
+                // Save token and user info
+                localStorage.setItem('adminToken', data.data.token);
+                localStorage.setItem('adminUser', JSON.stringify(data.data.user));
 
                 messageEl.textContent = 'Login successful! Redirecting...';
                 messageEl.className = 'message success';
